@@ -24,5 +24,35 @@
 ====================================================
 CircuitPython driver from MPU9250 IMU with Gyroscope, Accelerometer and Magenetometer sensors
 * Author(s): wallarug
+
+Implementation Notes
+--------------------
+
+**Hardware:**
+
+* Sparkfun `9-DOF Accel/Mag/Gyro+Temp Breakout Board - MPU9250
+  <https://www.sparkfun.com/products/13762>`_ (Product ID: 13762)
+
+**Software and Dependencies:**
+
+* Adafruit CircuitPython firmware for the ESP8622 and M0-based boards:
+  https://github.com/adafruit/circuitpython/releases
+* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
 """
+
+__version__ = "0.0.0-auto.0"
+__repo__ = "https://github.com/robotics-masters/RoboticsMasters_CircuitPython_MPU9250.git"
+
+import time
+try:
+    import struct
+except ImportError:
+    import ustruct as struct
+    
+import adafruit_bus_device.i2c_device as i2c_device
+import adafruit_bus_device.spi_device as spi_device
+from micropython import const
+
+# Internal constants and register values:
+# pylint: disable=bad-whitespace
 
