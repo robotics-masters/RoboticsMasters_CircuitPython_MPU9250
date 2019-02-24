@@ -194,7 +194,7 @@ class MPU9250:
 
     def __init__(self):
         # soft reset & reboot accel/gyro
-
+        
         
 
         time.sleep(0.01)
@@ -204,7 +204,88 @@ class MPU9250:
         # Setup I2C bypass for magnetometer
 
         # soft reset & reboot magnetometer
-        
+
+    
+    def read_temp_raw(self):
+        """Read the raw temperature sensor value and return it as a 12-bit
+        signed value.  If you want the temperature in nice units you probably
+        want to use the temperature property!
+        """
+        # Read temp sensor
+        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_TEMP_OUT_L, 2,
+                         self._BUFFER)
+        temp = ((self._BUFFER[1] << 8) | self._BUFFER[0]) >> 4
+        return _twos_comp(temp, 12)
+
+    @property
+    def temperature(self):
+        """The temperature of the sensor in degrees Celsius."""
+        # This is just a guess since the starting point (21C here) isn't documented :(
+        # See discussion from:
+        #  https://github.com/kriswiner/LSM9DS1/issues/3
+        temp = self.read_temp_raw()
+        temp = 27.5 + temp/16
+        return temp
+
+    def _read_u8(self, sensor_type, address):
+        # Read an 8-bit unsigned value from the specified 8-bit address.
+        # The sensor_type boolean should be _MAGTYPE when talking to the
+        # magnetometer, or _XGTYPE when talking to the accel or gyro.
+        # MUST be implemented by subclasses!
+        raise NotImplementedError()
+
+    def _read_bytes(self, sensor_type, address, count, buf):
+        # Read a count number of bytes into buffer from the provided 8-bit
+        # register address.  The sensor_type boolean should be _MAGTYPE when
+        # talking to the magnetometer, or _XGTYPE when talking to the accel or
+        # gyro.  MUST be implemented by subclasses!
+        raise NotImplementedError()
+
+    def _write_u8(self, sensor_type, address, val):
+        # Write an 8-bit unsigned value to the specified 8-bit address.
+        # The sensor_type boolean should be _MAGTYPE when talking to the
+        # magnetometer, or _XGTYPE when talking to the accel or gyro.
+        # MUST be implemented by subclasses!
+        raise NotImplementedError()
         
 
+# TODO: Test if working (copied from Adafruit/LSM9DS1)
+class MPU9250_I2C(MPU9250):
+    """Driver for the MPU9250 connect over I2C."""
+
+    def __init__(self, i2c):
+        self._mag_device = i2c_device.I2CDevice(i2c, _LSM9DS1_ADDRESS_MAG)
+        self._xg_device = i2c_device.I2CDevice(i2c, _LSM9DS1_ADDRESS_ACCELGYRO)
+        super().__init__()
+
+    def _read_u8(self, sensor_type, address):
+        if sensor_type == _MAGTYPE:
+            device = self._mag_device
+        else:
+            device = self._xg_device
+        with device as i2c:
+            self._BUFFER[0] = address & 0xFF
+            i2c.write(self._BUFFER, end=1, stop=False)
+            i2c.readinto(self._BUFFER, end=1)
+        return self._BUFFER[0]
+
+    def _read_bytes(self, sensor_type, address, count, buf):
+        if sensor_type == _MAGTYPE:
+            device = self._mag_device
+        else:
+            device = self._xg_device
+        with device as i2c:
+            buf[0] = address & 0xFF
+            i2c.write(buf, end=1, stop=False)
+            i2c.readinto(buf, end=count)
+
+    def _write_u8(self, sensor_type, address, val):
+        if sensor_type == _MAGTYPE:
+            device = self._mag_device
+        else:
+            device = self._xg_device
+        with device as i2c:
+            self._BUFFER[0] = address & 0xFF
+            self._BUFFER[1] = val & 0xFF
+            i2c.write(self._BUFFER, end=2)
         
