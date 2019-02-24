@@ -206,6 +206,67 @@ class MPU9250:
         # soft reset & reboot magnetometer
 
     
+    def read_accel_raw(self):
+        """Read the raw accelerometer sensor values and return it as a
+        3-tuple of X, Y, Z axis values that are 16-bit unsigned values.  If you
+        want the acceleration in nice units you probably want to use the
+        accelerometer property!
+        """
+        # Read the accelerometer
+        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_ACCEL_XOUT_L, 6,
+                         self._BUFFER)
+        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
+        return (raw_x, raw_y, raw_z)
+
+    @property
+    def acceleration(self):
+        """The accelerometer X, Y, Z axis values as a 3-tuple of
+        m/s^2 values.
+        """
+        raw = self.read_accel_raw()
+        return map(lambda x: x * self._accel_mg_lsb / 1000.0 * _SENSORS_GRAVITY_STANDARD,
+                   raw)
+
+    def read_mag_raw(self):
+        """Read the raw magnetometer sensor values and return it as a
+        3-tuple of X, Y, Z axis values that are 16-bit unsigned values.  If you
+        want the magnetometer in nice units you probably want to use the
+        magnetometer property!
+        """
+        # Read the magnetometer
+        self._read_bytes(_MAGTYPE, 0x80 | _MPU9250_REGISTER_MAG_XOUT_L, 6,
+                         self._BUFFER)
+        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
+        return (raw_x, raw_y, raw_z)
+
+    @property
+    def magnetic(self):
+        """The magnetometer X, Y, Z axis values as a 3-tuple of
+        gauss values.
+        """
+        raw = self.read_mag_raw()
+        return map(lambda x: x * self._mag_mgauss_lsb / 1000.0, raw)
+
+    def read_gyro_raw(self):
+        """Read the raw gyroscope sensor values and return it as a
+        3-tuple of X, Y, Z axis values that are 16-bit unsigned values.  If you
+        want the gyroscope in nice units you probably want to use the
+        gyroscope property!
+        """
+        # Read the gyroscope
+        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_GYRO_XOUT_L, 6,
+                         self._BUFFER)
+        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
+        return (raw_x, raw_y, raw_z)
+
+    @property
+    def gyro(self):
+        """The gyroscope X, Y, Z axis values as a 3-tuple of
+        degrees/second values.
+        """
+        raw = self.read_gyro_raw()
+        return map(lambda x: x * self._gyro_dps_digit, raw)
+    
     def read_temp_raw(self):
         """Read the raw temperature sensor value and return it as a 12-bit
         signed value.  If you want the temperature in nice units you probably
