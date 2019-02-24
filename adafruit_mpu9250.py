@@ -192,19 +192,121 @@ class MPU9250:
     # thread safe!
     _BUFFER = bytearray(6)
 
+    
+    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
     def __init__(self):
         # soft reset & reboot accel/gyro
         
-        
-
         time.sleep(0.01)
         # Check ID register for accel/gyro.
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
             raise RuntimeError('Could not find MPU9250, check wiring!')
-        # Setup I2C bypass for magnetometer
+        # setup I2C bypass for magnetometer
+        
 
         # soft reset & reboot magnetometer
 
+        # enable gyro continuous
+
+        # enable accel continuous
+
+
+        # enable mag continuous
+
+        # set default ranges for the various sensors
+
+
+
+
+
+        
+
+    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
+    @property
+    def accel_range(self):
+        """The accelerometer range.  Must be a value of:
+          - ACCELRANGE_2G
+          - ACCELRANGE_4G
+          - ACCELRANGE_8G
+          - ACCELRANGE_16G
+        """
+        reg = self._read_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG6_XL)
+        return (reg & 0b00011000) & 0xFF
+    
+    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
+    @accel_range.setter
+    def accel_range(self, val):
+        assert val in (ACCELRANGE_2G, ACCELRANGE_4G, ACCELRANGE_8G,
+                       ACCELRANGE_16G)
+        reg = self._read_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG6_XL)
+        reg = (reg & ~(0b00011000)) & 0xFF
+        reg |= val
+        self._write_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG6_XL, reg)
+        if val == ACCELRANGE_2G:
+            self._accel_mg_lsb = _LSM9DS1_ACCEL_MG_LSB_2G
+        elif val == ACCELRANGE_4G:
+            self._accel_mg_lsb = _LSM9DS1_ACCEL_MG_LSB_4G
+        elif val == ACCELRANGE_8G:
+            self._accel_mg_lsb = _LSM9DS1_ACCEL_MG_LSB_8G
+        elif val == ACCELRANGE_16G:
+            self._accel_mg_lsb = _LSM9DS1_ACCEL_MG_LSB_16G
+
+    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
+    @property
+    def mag_gain(self):
+        """The magnetometer gain.  Must be a value of:
+          - MAGGAIN_4GAUSS
+          - MAGGAIN_8GAUSS
+          - MAGGAIN_12GAUSS
+          - MAGGAIN_16GAUSS
+        """
+        reg = self._read_u8(_MAGTYPE, _LSM9DS1_REGISTER_CTRL_REG2_M)
+        return (reg & 0b01100000) & 0xFF
+
+    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
+    @mag_gain.setter
+    def mag_gain(self, val):
+        assert val in (MAGGAIN_4GAUSS, MAGGAIN_8GAUSS, MAGGAIN_12GAUSS,
+                       MAGGAIN_16GAUSS)
+        reg = self._read_u8(_MAGTYPE, _LSM9DS1_REGISTER_CTRL_REG2_M)
+        reg = (reg & ~(0b01100000)) & 0xFF
+        reg |= val
+        self._write_u8(_MAGTYPE, _LSM9DS1_REGISTER_CTRL_REG2_M, reg)
+        if val == MAGGAIN_4GAUSS:
+            self._mag_mgauss_lsb = _LSM9DS1_MAG_MGAUSS_4GAUSS
+        elif val == MAGGAIN_8GAUSS:
+            self._mag_mgauss_lsb = _LSM9DS1_MAG_MGAUSS_8GAUSS
+        elif val == MAGGAIN_12GAUSS:
+            self._mag_mgauss_lsb = _LSM9DS1_MAG_MGAUSS_12GAUSS
+        elif val == MAGGAIN_16GAUSS:
+            self._mag_mgauss_lsb = _LSM9DS1_MAG_MGAUSS_16GAUSS
+
+    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
+    @property
+    def gyro_scale(self):
+        """The gyroscope scale.  Must be a value of:
+          - GYROSCALE_245DPS
+          - GYROSCALE_500DPS
+          - GYROSCALE_2000DPS
+        """
+        reg = self._read_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG1_G)
+        return (reg & 0b00011000) & 0xFF
+
+    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
+    @gyro_scale.setter
+    def gyro_scale(self, val):
+        
+        assert val in (GYROSCALE_245DPS, GYROSCALE_500DPS, GYROSCALE_2000DPS)
+        reg = self._read_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG1_G)
+        reg = (reg & ~(0b00011000)) & 0xFF
+        reg |= val
+        self._write_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG1_G, reg)
+        if val == GYROSCALE_245DPS:
+            self._gyro_dps_digit = _LSM9DS1_GYRO_DPS_DIGIT_245DPS
+        elif val == GYROSCALE_500DPS:
+            self._gyro_dps_digit = _LSM9DS1_GYRO_DPS_DIGIT_500DPS
+        elif val == GYROSCALE_2000DPS:
+            self._gyro_dps_digit = _LSM9DS1_GYRO_DPS_DIGIT_2000DPS
     
     def read_accel_raw(self):
         """Read the raw accelerometer sensor values and return it as a
