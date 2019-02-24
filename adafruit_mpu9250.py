@@ -58,7 +58,7 @@ from micropython import const
 _MPU9250_ADDRESS_ACCELGYRO       = const(0x68) #corrected
 _MPU9250_ADDRESS_MAG             = const(0x0C) #corrected - bypass
 _MPU9250_XG_ID                   = const(0b01110001) #corrected (0x71)
-_MPU9250_MAG_ID                  = const(0b00111101)
+_MPU9250_MAG_ID                  = const(0b01001000) #corrected (0x48) 0 1 0 0   1 0 0 0
 _MPU9250_ACCEL_MG_LSB_2G         = 0.061
 _MPU9250_ACCEL_MG_LSB_4G         = 0.122
 _MPU9250_ACCEL_MG_LSB_8G         = 0.244
@@ -107,21 +107,23 @@ _MPU9250_REGISTER_CTRL_REG10     = const(0x24)
 
 
 
-_MPU9250_REGISTER_WHO_AM_I_M     = const(0x00) #corrected - R
-
+_MPU9250_REGISTER_WHO_AM_I_M     = const(0x00) #corrected - reports 0x48
+_MPU9250_REGISTER_STATUS_REG1_M   = const(0x02) #corrected - RW
 _MPU9250_REGISTER_MAG_XOUT_L      = const(0x03) #corrected - R
 _MPU9250_REGISTER_MAG_XOUT_H      = const(0x04) #corrected - R
 _MPU9250_REGISTER_MAG_YOUT_L      = const(0x05) #corrected - R
 _MPU9250_REGISTER_MAG_YOUT_H      = const(0x06) #corrected - R
 _MPU9250_REGISTER_MAG_ZOUT_L      = const(0x07) #corrected - R
 _MPU9250_REGISTER_MAG_ZOUT_H      = const(0x08) #corrected - R
+_MPU9250_REGISTER_STATUS_REG2_M   = const(0x09) #corrected - RW
 
-_MPU9250_REGISTER_CTRL_REG1_M    = const(0x02) #corrected
-_MPU9250_REGISTER_CTRL_REG2_M    = const(0x09) #corrected
-_MPU9250_REGISTER_CTRL_REG3_M    = const(0x22) #notexist
-_MPU9250_REGISTER_CTRL_REG4_M    = const(0x23) #notexist
-_MPU9250_REGISTER_CTRL_REG5_M    = const(0x24) #notexist
-_MPU9250_REGISTER_STATUS_REG_M   = const(0x27)
+_MPU9250_REGISTER_CTRL_REG1_M    = const(0x02) 
+_MPU9250_REGISTER_CTRL_REG2_M    = const(0x09) 
+_MPU9250_REGISTER_CTRL_REG3_M    = const(0x22) 
+_MPU9250_REGISTER_CTRL_REG4_M    = const(0x23) 
+_MPU9250_REGISTER_CTRL_REG5_M    = const(0x24) 
+
+
 
 
 
