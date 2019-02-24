@@ -71,15 +71,25 @@ _MPU9250_GYRO_DPS_DIGIT_245DPS   = 0.00875
 _MPU9250_GYRO_DPS_DIGIT_500DPS   = 0.01750
 _MPU9250_GYRO_DPS_DIGIT_2000DPS  = 0.07000
 _MPU9250_TEMP_LSB_DEGREE_CELSIUS = 8 # 1°C = 8, 25° = 200, etc.
+
 _MPU9250_REGISTER_WHO_AM_I_XG    = const(0x75) #corrected - reports 0x71
+
 _MPU9250_REGISTER_CTRL_REG1_G    = const(0x10)
 _MPU9250_REGISTER_CTRL_REG2_G    = const(0x11)
 _MPU9250_REGISTER_CTRL_REG3_G    = const(0x12)
-_MPU9250_REGISTER_TEMP_OUT_H     = const(0x41) #corrected - R
-_MPU9250_REGISTER_TEMP_OUT_L     = const(0x42) #corrected - R
+
 
 _MPU9250_REGISTER_STATUS_REG     = const(0x17)
 
+
+_MPU9250_REGISTER_ACCEL_XOUT_H     = const(0x3B) #corrected - R
+_MPU9250_REGISTER_ACCEL_XOUT_L     = const(0x3C) #corrected - R
+_MPU9250_REGISTER_ACCEL_YOUT_H     = const(0x3D) #corrected - R
+_MPU9250_REGISTER_ACCEL_YOUT_L     = const(0x3E) #corrected - R
+_MPU9250_REGISTER_ACCEL_ZOUT_H     = const(0x3F) #corrected - R
+_MPU9250_REGISTER_ACCEL_ZOUT_L     = const(0x40) #corrected - R
+_MPU9250_REGISTER_TEMP_OUT_H     = const(0x41) #corrected - R
+_MPU9250_REGISTER_TEMP_OUT_L     = const(0x42) #corrected - R
 _MPU9250_REGISTER_GYRO_XOUT_H      = const(0x43) #corrected - R
 _MPU9250_REGISTER_GYRO_XOUT_L      = const(0x44) #corrected - R
 _MPU9250_REGISTER_GYRO_YOUT_H      = const(0x45) #corrected - R
@@ -95,26 +105,26 @@ _MPU9250_REGISTER_CTRL_REG8      = const(0x22)
 _MPU9250_REGISTER_CTRL_REG9      = const(0x23)
 _MPU9250_REGISTER_CTRL_REG10     = const(0x24)
 
-_MPU9250_REGISTER_ACCEL_XOUT_H     = const(0x3B) #corrected - R
-_MPU9250_REGISTER_ACCEL_XOUT_L     = const(0x3C) #corrected - R
-_MPU9250_REGISTER_ACCEL_YOUT_H     = const(0x3D) #corrected - R
-_MPU9250_REGISTER_ACCEL_YOUT_L     = const(0x3E) #corrected - R
-_MPU9250_REGISTER_ACCEL_ZOUT_H     = const(0x3F) #corrected - R
-_MPU9250_REGISTER_ACCEL_ZOUT_L     = const(0x40) #corrected - R
 
-_MPU9250_REGISTER_WHO_AM_I_M     = const(0x0F)
+
+_MPU9250_REGISTER_WHO_AM_I_M     = const(0x00) #corrected - R
+
+_MPU9250_REGISTER_MAG_XOUT_L      = const(0x03) #corrected - R
+_MPU9250_REGISTER_MAG_XOUT_H      = const(0x04) #corrected - R
+_MPU9250_REGISTER_MAG_YOUT_L      = const(0x05) #corrected - R
+_MPU9250_REGISTER_MAG_YOUT_H      = const(0x06) #corrected - R
+_MPU9250_REGISTER_MAG_ZOUT_L      = const(0x07) #corrected - R
+_MPU9250_REGISTER_MAG_ZOUT_H      = const(0x08) #corrected - R
+
 _MPU9250_REGISTER_CTRL_REG1_M    = const(0x02) #corrected
 _MPU9250_REGISTER_CTRL_REG2_M    = const(0x09) #corrected
 _MPU9250_REGISTER_CTRL_REG3_M    = const(0x22) #notexist
 _MPU9250_REGISTER_CTRL_REG4_M    = const(0x23) #notexist
 _MPU9250_REGISTER_CTRL_REG5_M    = const(0x24) #notexist
 _MPU9250_REGISTER_STATUS_REG_M   = const(0x27)
-_MPU9250_REGISTER_OUT_X_L_M      = const(0x28)
-_MPU9250_REGISTER_OUT_X_H_M      = const(0x29)
-_MPU9250_REGISTER_OUT_Y_L_M      = const(0x2A)
-_MPU9250_REGISTER_OUT_Y_H_M      = const(0x2B)
-_MPU9250_REGISTER_OUT_Z_L_M      = const(0x2C)
-_MPU9250_REGISTER_OUT_Z_H_M      = const(0x2D)
+
+
+
 _MPU9250_REGISTER_CFG_M          = const(0x30)
 _MPU9250_REGISTER_INT_SRC_M      = const(0x31)
 _MAGTYPE                         = True
