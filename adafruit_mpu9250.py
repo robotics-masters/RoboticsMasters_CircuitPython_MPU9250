@@ -56,8 +56,8 @@ from micropython import const
 # Internal constants and register values:
 # pylint: disable=bad-whitespace
 _MPU9250_ADDRESS_ACCELGYRO       = const(0x68) #corrected
-_MPU9250_ADDRESS_MAG             = const(0x69) #corrected
-_MPU9250_XG_ID                   = const(0b01101000)
+_MPU9250_ADDRESS_MAG             = const(0x0C) #corrected - bypass
+_MPU9250_XG_ID                   = const(0b01110001) #corrected (0x71)
 _MPU9250_MAG_ID                  = const(0b00111101)
 _MPU9250_ACCEL_MG_LSB_2G         = 0.061
 _MPU9250_ACCEL_MG_LSB_4G         = 0.122
@@ -71,19 +71,22 @@ _MPU9250_GYRO_DPS_DIGIT_245DPS   = 0.00875
 _MPU9250_GYRO_DPS_DIGIT_500DPS   = 0.01750
 _MPU9250_GYRO_DPS_DIGIT_2000DPS  = 0.07000
 _MPU9250_TEMP_LSB_DEGREE_CELSIUS = 8 # 1°C = 8, 25° = 200, etc.
-_MPU9250_REGISTER_WHO_AM_I_XG    = const(0x75) #corrected
+_MPU9250_REGISTER_WHO_AM_I_XG    = const(0x75) #corrected - reports 0x71
 _MPU9250_REGISTER_CTRL_REG1_G    = const(0x10)
 _MPU9250_REGISTER_CTRL_REG2_G    = const(0x11)
 _MPU9250_REGISTER_CTRL_REG3_G    = const(0x12)
-_MPU9250_REGISTER_TEMP_OUT_L     = const(0x42) #corrected
-_MPU9250_REGISTER_TEMP_OUT_H     = const(0x41) #corrected
+_MPU9250_REGISTER_TEMP_OUT_H     = const(0x41) #corrected - R
+_MPU9250_REGISTER_TEMP_OUT_L     = const(0x42) #corrected - R
+
 _MPU9250_REGISTER_STATUS_REG     = const(0x17)
-_MPU9250_REGISTER_OUT_X_L_G      = const(0x78) #corrected
-_MPU9250_REGISTER_OUT_X_H_G      = const(0x77) #corrected
-_MPU9250_REGISTER_OUT_Y_L_G      = const(0x7B) #corrected
-_MPU9250_REGISTER_OUT_Y_H_G      = const(0x7A) #corrected
-_MPU9250_REGISTER_OUT_Z_L_G      = const(0x7E) #corrected
-_MPU9250_REGISTER_OUT_Z_H_G      = const(0x7D) #corrected
+
+_MPU9250_REGISTER_GYRO_XOUT_H      = const(0x43) #corrected - R
+_MPU9250_REGISTER_GYRO_XOUT_L      = const(0x44) #corrected - R
+_MPU9250_REGISTER_GYRO_YOUT_H      = const(0x45) #corrected - R
+_MPU9250_REGISTER_GYRO_YOUT_L      = const(0x46) #corrected - R
+_MPU9250_REGISTER_GYRO_ZOUT_H      = const(0x47) #corrected - R
+_MPU9250_REGISTER_GYRO_ZOUT_L      = const(0x48) #corrected - R
+
 _MPU9250_REGISTER_CTRL_REG4      = const(0x1E)
 _MPU9250_REGISTER_CTRL_REG5_XL   = const(0x1F)
 _MPU9250_REGISTER_CTRL_REG6_XL   = const(0x20)
@@ -91,12 +94,14 @@ _MPU9250_REGISTER_CTRL_REG7_XL   = const(0x21)
 _MPU9250_REGISTER_CTRL_REG8      = const(0x22)
 _MPU9250_REGISTER_CTRL_REG9      = const(0x23)
 _MPU9250_REGISTER_CTRL_REG10     = const(0x24)
-_MPU9250_REGISTER_OUT_X_L_XL     = const(0x28)
-_MPU9250_REGISTER_OUT_X_H_XL     = const(0x29)
-_MPU9250_REGISTER_OUT_Y_L_XL     = const(0x2A)
-_MPU9250_REGISTER_OUT_Y_H_XL     = const(0x2B)
-_MPU9250_REGISTER_OUT_Z_L_XL     = const(0x2C)
-_MPU9250_REGISTER_OUT_Z_H_XL     = const(0x2D)
+
+_MPU9250_REGISTER_ACCEL_XOUT_H     = const(0x3B) #corrected - R
+_MPU9250_REGISTER_ACCEL_XOUT_L     = const(0x3C) #corrected - R
+_MPU9250_REGISTER_ACCEL_YOUT_H     = const(0x3D) #corrected - R
+_MPU9250_REGISTER_ACCEL_YOUT_L     = const(0x3E) #corrected - R
+_MPU9250_REGISTER_ACCEL_ZOUT_H     = const(0x3F) #corrected - R
+_MPU9250_REGISTER_ACCEL_ZOUT_L     = const(0x40) #corrected - R
+
 _MPU9250_REGISTER_WHO_AM_I_M     = const(0x0F)
 _MPU9250_REGISTER_CTRL_REG1_M    = const(0x02) #corrected
 _MPU9250_REGISTER_CTRL_REG2_M    = const(0x09) #corrected
@@ -115,3 +120,52 @@ _MPU9250_REGISTER_INT_SRC_M      = const(0x31)
 _MAGTYPE                         = True
 _XGTYPE                          = False
 _SENSORS_GRAVITY_STANDARD        = 9.80665
+
+
+# User facing constants/module globals.
+ACCELRANGE_2G                = (0b00 << 3)
+ACCELRANGE_16G               = (0b01 << 3)
+ACCELRANGE_4G                = (0b10 << 3)
+ACCELRANGE_8G                = (0b11 << 3)
+MAGGAIN_4GAUSS               = (0b00 << 5)  # +/- 4 gauss
+MAGGAIN_8GAUSS               = (0b01 << 5)  # +/- 8 gauss
+MAGGAIN_12GAUSS              = (0b10 << 5)  # +/- 12 gauss
+MAGGAIN_16GAUSS              = (0b11 << 5)  # +/- 16 gauss
+GYROSCALE_245DPS             = (0b00 << 3)  # +/- 245 degrees/s rotation
+GYROSCALE_500DPS             = (0b01 << 3)  # +/- 500 degrees/s rotation
+GYROSCALE_2000DPS            = (0b11 << 3)  # +/- 2000 degrees/s rotation
+# pylint: enable=bad-whitespace
+
+
+def _twos_comp(val, bits):
+    # Convert an unsigned integer in 2's compliment form of the specified bit
+    # length to its signed integer value and return it.
+    if val & (1 << (bits - 1)) != 0:
+        return val - (1 << bits)
+    return val
+
+
+class MPU9250:
+    """Driver for the MPU9250 accelerometer, magnetometer, gyroscope."""
+    
+    # Class-level buffer for reading and writing data with the sensor.
+    # This reduces memory allocations but means the code is not re-entrant or
+    # thread safe!
+    _BUFFER = bytearray(6)
+
+    def __init__(self):
+        # soft reset & reboot accel/gyro
+
+        
+
+        time.sleep(0.01)
+        # Check ID register for accel/gyro.
+        if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
+            raise RuntimeError('Could not find MPU9250, check wiring!')
+        # Setup I2C bypass for magnetometer
+
+        # soft reset & reboot magnetometer
+        
+        
+
+        
