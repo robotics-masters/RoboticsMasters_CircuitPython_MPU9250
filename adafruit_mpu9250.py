@@ -73,15 +73,41 @@ _MPU9250_GYRO_DPS_DIGIT_500DPS   = 0.01750
 _MPU9250_GYRO_DPS_DIGIT_2000DPS  = 0.07000
 _MPU9250_TEMP_LSB_DEGREE_CELSIUS = 8 # 1°C = 8, 25° = 200, etc.
 
+
+# MPU6500 - Accel and Gyro
 _MPU9250_REGISTER_WHO_AM_I_XG    = const(0x75) #corrected - reports 0x71
 
-_MPU9250_REGISTER_CTRL_REG1_G    = const(0x10)
-_MPU9250_REGISTER_CTRL_REG2_G    = const(0x11)
-_MPU9250_REGISTER_CTRL_REG3_G    = const(0x12)
+_MPU9250_SELF_TEST_X_GYRO       = const(0x00) #corrected
+_MPU9250_SELF_TEST_Y_GYRO       = const(0x01) #corrected
+_MPU9250_SELF_TEST_Z_GYRO       = const(0x02) #corrected
+_MPU9250_SELF_TEST_X_ACCEL       = const(0x0D) #corrected
+_MPU9250_SELF_TEST_Y_ACCEL       = const(0x0E) #corrected
+_MPU9250_SELF_TEST_Z_ACCEL       = const(0x0F) #corrected
 
+_MPU9250_XG_OFFSET_H            = const(0x13) #corrected
+_MPU9250_XG_OFFSET_L            = const(0x14) #corrected
+_MPU9250_YG_OFFSET_H            = const(0x15) #corrected
+_MPU9250_YG_OFFSET_L            = const(0x16) #corrected
+_MPU9250_ZG_OFFSET_H            = const(0x17) #corrected
+_MPU9250_ZG_OFFSET_L            = const(0x18) #corrected
 
-_MPU9250_REGISTER_STATUS_REG     = const(0x17)
+_MPU9250_SMPLRT_DIV             = const(0x19)
+_MPU9250_CONFIG                 = const(0x1A)
+_MPU9250_GYRO_CONFIG            = const(0x1B)
+_MPU9250_ACCEL_CONFIG           = const(0x1C)   
+_MPU9250_ACCEL_CONFIG2          = const(0x1D)
+#_MPU9250_LP_ACCEL_ODR           = const(0x1E)
+#_MPU9250_WOM_THR                = const(0x1F)
 
+_MPU9250_FIFO_EN                = const(0x23)
+_MPU9250_I2C_MST_CTRL           = const(0x24)
+_MPU9250_I2C_SLV0_ADDR          = const(0x25)
+_MPU9250_I2C_SLV0_REG           = const(0x26)
+_MPU9250_I2C_SLV0_CTRL          = const(0x27)
+#_MPU9250_I2C_MST_STATUS         = const(0x36)
+
+_MPU9250_INT_PIN_CFG            = const(0x37) # for bypass
+_MPU9250_INT_ENABLE             = const(0x38) # for bypass
 
 _MPU9250_REGISTER_ACCEL_XOUT_H     = const(0x3B) #corrected - R
 _MPU9250_REGISTER_ACCEL_XOUT_L     = const(0x3C) #corrected - R
@@ -98,6 +124,32 @@ _MPU9250_REGISTER_GYRO_YOUT_L      = const(0x46) #corrected - R
 _MPU9250_REGISTER_GYRO_ZOUT_H      = const(0x47) #corrected - R
 _MPU9250_REGISTER_GYRO_ZOUT_L      = const(0x48) #corrected - R
 
+_MPU9250_USER_CTRL      = const(0x6A)
+_MPU9250_PWR_MGMT_1     = const(0x6B)
+_MPU9250_PWR_MGMT_2     = const(0x6C)
+
+_MPU9250_FIFO_COUNT_H     = const(0x72)
+_MPU9250_FIFO_COUNT_L     = const(0x73)
+_MPU9250_FIFO_R_W         = const(0x74)
+
+_MPU9250_XA_OFFSET_H        = const(0x77)
+_MPU9250_XA_OFFSET_L        = const(0x78)
+_MPU9250_YA_OFFSET_H        = const(0x7A)
+_MPU9250_YA_OFFSET_L        = const(0x7B)
+_MPU9250_ZA_OFFSET_H        = const(0x7D)
+_MPU9250_ZA_OFFSET_L        = const(0x7E)
+
+
+_MPU9250_REGISTER_CTRL_REG1_G    = const(0x10)
+_MPU9250_REGISTER_CTRL_REG2_G    = const(0x11)
+_MPU9250_REGISTER_CTRL_REG3_G    = const(0x12)
+
+
+_MPU9250_REGISTER_STATUS_REG     = const(0x17)
+
+
+
+
 _MPU9250_REGISTER_CTRL_REG4      = const(0x1E)
 _MPU9250_REGISTER_CTRL_REG5_XL   = const(0x1F)
 _MPU9250_REGISTER_CTRL_REG6_XL   = const(0x20)
@@ -106,7 +158,7 @@ _MPU9250_REGISTER_CTRL_REG8      = const(0x22)
 _MPU9250_REGISTER_CTRL_REG9      = const(0x23)
 _MPU9250_REGISTER_CTRL_REG10     = const(0x24)
 
-
+# AK8963 - Magenetometer
 _MPU9250_REGISTER_WHO_AM_I_M     = const(0x00) #corrected - reports 0x48
 _MPU9250_REGISTER_STATUS_REG1_M   = const(0x02) #corrected - R (ST1)
 _MPU9250_REGISTER_MAG_XOUT_L      = const(0x03) #corrected - R
@@ -120,20 +172,9 @@ _MPU9250_REGISTER_STATUS_REG2_M   = const(0x09) #corrected - R (ST2)
 
 ##  See Page 51 of Documentation for information about this register.
 ##   Link: https://www.invensense.com/wp-content/uploads/2015/02/RM-MPU-9250A-00-v1.6.pdf
-_MPU9250_REGISTER_CTRL_REG1_M    = const(0x0A) #corrected - RW (CNTL)
+_MPU9250_REGISTER_CNTL_M    = const(0x0A) #corrected - RW (CNTL)
 
 
-_MPU9250_REGISTER_CTRL_REG2_M    = const(0x09) 
-_MPU9250_REGISTER_CTRL_REG3_M    = const(0x22) 
-_MPU9250_REGISTER_CTRL_REG4_M    = const(0x23) 
-_MPU9250_REGISTER_CTRL_REG5_M    = const(0x24) 
-
-
-
-
-
-_MPU9250_REGISTER_CFG_M          = const(0x30)
-_MPU9250_REGISTER_INT_SRC_M      = const(0x31)
 _MAGTYPE                         = True
 _XGTYPE                          = False
 _SENSORS_GRAVITY_STANDARD        = 9.80665
