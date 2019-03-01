@@ -197,7 +197,7 @@ class MPU9250:
     def __init__(self, i2c, address=_MPU9250_ADDRESS_ACCELGYRO,
 			 	accel_fs=ACCELRANGE_2G
 				gyro_fs=GYROSCALE_245DPS):
-
+	### ACCEL and GYRO SETUP
 	# Check ID register for accel/gyro.
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
             raise RuntimeError('Could not find MPU9250, check wiring!')
@@ -232,8 +232,15 @@ class MPU9250:
 	time.sleep(0.1)
 
 
+	### MAGNETOMETER SETUP
+	# Check ID register for mag.
+        if self._read_u8(_MAGTYPE, _MPU9250_REGISTER_WHO_AM_I_M) != _MPU9250_MAG_ID:
+            raise RuntimeError('Could not find MPU9250 Magnetometer, enable I2C bypass!')
 
-
+	# cont mode 1
+	self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, ((0x01 << 4) | 0x02) # 16bit|8hz
+	self._write_u8(_MAGTYPE, _
+	
         # setup I2C bypass for magnetometer
         
 
@@ -283,6 +290,7 @@ class MPU9250:
         elif val == ACCELRANGE_16G:
             self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_16G
 
+    # TODO: Patch these two methods up
     @property
     def accel_rate(self):
         """The accelerometer sample rate.  Must be a value of:
