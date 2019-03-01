@@ -226,7 +226,10 @@ class MPU9250:
 	reg = self.accel_range()
 	reg = reg & ~0x18 # Clear AFS bits[4:3]
 	reg = reg | 0x03 << 3 # set full scale range for accel TODO: Fix this.
-	self.
+	self.accel_range(reg)
+
+	## Set accelerometer sample rate config
+	reg = 
 
 	time.sleep(0.01)
         # Check ID register for accel/gyro.
@@ -252,7 +255,7 @@ class MPU9250:
 
         
 
-    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
+    
     @property
     def accel_range(self):
         """The accelerometer range.  Must be a value of:
@@ -264,7 +267,6 @@ class MPU9250:
         reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG) # corrected.
         return (reg & 0b00011000) & 0xFF
     
-    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
     @accel_range.setter
     def accel_range(self, val):
         assert val in (ACCELRANGE_2G, ACCELRANGE_4G, ACCELRANGE_8G,
@@ -281,6 +283,23 @@ class MPU9250:
             self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_8G
         elif val == ACCELRANGE_16G:
             self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_16G
+
+    @property
+    def accel_rate(self):
+        """The accelerometer sample rate.  Must be a value of:
+          - UNKNOWN
+        """
+        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2) # corrected.
+        return (reg & 0b00011000) & 0xFF
+    
+    @accel_rate.setter
+    def accel_rate(self, val):
+        assert val in (ACCELRANGE_2G, ACCELRANGE_4G, ACCELRANGE_8G,
+                       ACCELRANGE_16G)
+        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2)
+        reg = reg & ~0x0F
+        reg |= 0x03
+        self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, reg)
 
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
     @property
