@@ -202,7 +202,6 @@ class MPU9250:
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
             raise RuntimeError('Could not find MPU9250, check wiring!')
 	
-
 	# wake up device - clear sleep mode bit (6), enable all sensors
 	self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
 	time.sleep(0.1)
@@ -224,9 +223,11 @@ class MPU9250:
 	## Set accelerometer full-scale range configuration
 	self.accel_range(accel_fs)
 
+	## Set accelerometer sample rate configuration
+	self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
 	
 	## Set I2C By-Pass
-	self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x22)
+	self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x22) # could also be 0x02 or 0x12
 	self._write_u8(_XGTYPE, _MPU9250_ENABLE, 0x01)
 	time.sleep(0.1)
 
