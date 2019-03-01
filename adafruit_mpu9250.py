@@ -230,7 +230,7 @@ class MPU9250:
           - ACCELRANGE_8G
           - ACCELRANGE_16G
         """
-        reg = self._read_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG6_XL)
+        reg = self._read_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG6_XL)
         return (reg & 0b00011000) & 0xFF
     
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
@@ -238,18 +238,18 @@ class MPU9250:
     def accel_range(self, val):
         assert val in (ACCELRANGE_2G, ACCELRANGE_4G, ACCELRANGE_8G,
                        ACCELRANGE_16G)
-        reg = self._read_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG6_XL)
+        reg = self._read_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG6_XL)
         reg = (reg & ~(0b00011000)) & 0xFF
         reg |= val
-        self._write_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG6_XL, reg)
+        self._write_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG6_XL, reg)
         if val == ACCELRANGE_2G:
-            self._accel_mg_lsb = _LSM9DS1_ACCEL_MG_LSB_2G
+            self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_2G
         elif val == ACCELRANGE_4G:
-            self._accel_mg_lsb = _LSM9DS1_ACCEL_MG_LSB_4G
+            self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_4G
         elif val == ACCELRANGE_8G:
-            self._accel_mg_lsb = _LSM9DS1_ACCEL_MG_LSB_8G
+            self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_8G
         elif val == ACCELRANGE_16G:
-            self._accel_mg_lsb = _LSM9DS1_ACCEL_MG_LSB_16G
+            self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_16G
 
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
     @property
@@ -260,7 +260,7 @@ class MPU9250:
           - MAGGAIN_12GAUSS
           - MAGGAIN_16GAUSS
         """
-        reg = self._read_u8(_MAGTYPE, _LSM9DS1_REGISTER_CTRL_REG2_M)
+        reg = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_CTRL_REG2_M)
         return (reg & 0b01100000) & 0xFF
 
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
@@ -268,18 +268,18 @@ class MPU9250:
     def mag_gain(self, val):
         assert val in (MAGGAIN_4GAUSS, MAGGAIN_8GAUSS, MAGGAIN_12GAUSS,
                        MAGGAIN_16GAUSS)
-        reg = self._read_u8(_MAGTYPE, _LSM9DS1_REGISTER_CTRL_REG2_M)
+        reg = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_CTRL_REG2_M)
         reg = (reg & ~(0b01100000)) & 0xFF
         reg |= val
-        self._write_u8(_MAGTYPE, _LSM9DS1_REGISTER_CTRL_REG2_M, reg)
+        self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CTRL_REG2_M, reg)
         if val == MAGGAIN_4GAUSS:
-            self._mag_mgauss_lsb = _LSM9DS1_MAG_MGAUSS_4GAUSS
+            self._mag_mgauss_lsb = _MPU9250_MAG_MGAUSS_4GAUSS
         elif val == MAGGAIN_8GAUSS:
-            self._mag_mgauss_lsb = _LSM9DS1_MAG_MGAUSS_8GAUSS
+            self._mag_mgauss_lsb = _MPU9250_MAG_MGAUSS_8GAUSS
         elif val == MAGGAIN_12GAUSS:
-            self._mag_mgauss_lsb = _LSM9DS1_MAG_MGAUSS_12GAUSS
+            self._mag_mgauss_lsb = _MPU9250_MAG_MGAUSS_12GAUSS
         elif val == MAGGAIN_16GAUSS:
-            self._mag_mgauss_lsb = _LSM9DS1_MAG_MGAUSS_16GAUSS
+            self._mag_mgauss_lsb = _MPU9250_MAG_MGAUSS_16GAUSS
 
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
     @property
@@ -289,7 +289,7 @@ class MPU9250:
           - GYROSCALE_500DPS
           - GYROSCALE_2000DPS
         """
-        reg = self._read_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG1_G)
+        reg = self._read_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG1_G)
         return (reg & 0b00011000) & 0xFF
 
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
@@ -297,16 +297,16 @@ class MPU9250:
     def gyro_scale(self, val):
         
         assert val in (GYROSCALE_245DPS, GYROSCALE_500DPS, GYROSCALE_2000DPS)
-        reg = self._read_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG1_G)
+        reg = self._read_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG1_G)
         reg = (reg & ~(0b00011000)) & 0xFF
         reg |= val
-        self._write_u8(_XGTYPE, _LSM9DS1_REGISTER_CTRL_REG1_G, reg)
+        self._write_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG1_G, reg)
         if val == GYROSCALE_245DPS:
-            self._gyro_dps_digit = _LSM9DS1_GYRO_DPS_DIGIT_245DPS
+            self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_245DPS
         elif val == GYROSCALE_500DPS:
-            self._gyro_dps_digit = _LSM9DS1_GYRO_DPS_DIGIT_500DPS
+            self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_500DPS
         elif val == GYROSCALE_2000DPS:
-            self._gyro_dps_digit = _LSM9DS1_GYRO_DPS_DIGIT_2000DPS
+            self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_2000DPS
     
     def read_accel_raw(self):
         """Read the raw accelerometer sensor values and return it as a
@@ -417,8 +417,8 @@ class MPU9250_I2C(MPU9250):
     """Driver for the MPU9250 connect over I2C."""
 
     def __init__(self, i2c):
-        self._mag_device = i2c_device.I2CDevice(i2c, _LSM9DS1_ADDRESS_MAG)
-        self._xg_device = i2c_device.I2CDevice(i2c, _LSM9DS1_ADDRESS_ACCELGYRO)
+        self._mag_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_MAG)
+        self._xg_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_ACCELGYRO)
         super().__init__()
 
     def _read_u8(self, sensor_type, address):
