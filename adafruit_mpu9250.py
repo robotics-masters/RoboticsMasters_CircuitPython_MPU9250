@@ -216,7 +216,7 @@ class MPU9250:
 	self._write_u8(_XGTYPE, _MPU9250_CONFIG, 0x03)
 
 	# set sample rate = gyroscope output rate/(1 + SMPLRT_DIV)
-	#self._write_u8(_XGTYPE, _MPU9250_SMPLRT_DIV, 0x03)  #TODO: Fix this.
+	self._write_u8(_XGTYPE, _MPU9250_SMPLRT_DIV, 0x04)
         
 	## Set gyroscope full scale range
 	self.gyro_scale(gyro_fs) # write new value
@@ -224,8 +224,6 @@ class MPU9250:
 	## Set accelerometer full-scale range configuration
 	self.accel_range(accel_fs)
 
-	## Set accelerometer sample rate config
-	#
 	
 	## Set I2C By-Pass
 	self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x22)
