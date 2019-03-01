@@ -194,10 +194,41 @@ class MPU9250:
 
     
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
-    def __init__(self):
-        # soft reset & reboot accel/gyro
+    def __init__(self, i2c, address=_MPU9250_ADDRESS_ACCELGYRO,):
+        ## soft reset & reboot accel/gyro
+	# reset - set bit 7 to reset MPU9250 
+        self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x80) 
+	time.sleep(0.01)
+
+	# wake up device - clear sleep mode bit (6), enable all sensors
+	self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
+	time.sleep(0.01)
+	
+	# get stable time source - 
+	self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x01)
+	time.sleep(0.02)
+
+	# configure gyro and themometer
+	# disable Fsync and set above to 41 and 42 Hz respectively;
+	self._write_u8(_XGTYPE, _MPU9250_CONFIG, 0x03)
+
+	# set sample rate = gyroscope output rate/(1 + SMPLRT_DIV)
+	self._write_u8(_XGTYPE, _MPU9250_SMPLRT_DIV, 0x03)  #TODO: Fix this.
         
-        time.sleep(0.01)
+	## Set gyroscope full scale range
+	reg = self.gyro_scale()
+	reg = reg & ~0x02 # Clear Fchoice bits [1:0]
+	reg = reg & ~0x18 # Clear AFS bits [4:3]
+	reg = reg | 0x03 << 3 # set full scale range for gyro TODO: Fix this.
+	self.gyro_scale(reg) # write new value
+
+	## Set accelerometer full-scale range configuration
+	reg = self.accel_range()
+	reg = reg & ~0x18 # Clear AFS bits[4:3]
+	reg = reg | 0x03 << 3 # set full scale range for accel TODO: Fix this.
+	self.
+
+	time.sleep(0.01)
         # Check ID register for accel/gyro.
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
             raise RuntimeError('Could not find MPU9250, check wiring!')
@@ -230,7 +261,7 @@ class MPU9250:
           - ACCELRANGE_8G
           - ACCELRANGE_16G
         """
-        reg = self._read_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG6_XL)
+        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG) # corrected.
         return (reg & 0b00011000) & 0xFF
     
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
@@ -238,10 +269,10 @@ class MPU9250:
     def accel_range(self, val):
         assert val in (ACCELRANGE_2G, ACCELRANGE_4G, ACCELRANGE_8G,
                        ACCELRANGE_16G)
-        reg = self._read_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG6_XL)
+        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG)
         reg = (reg & ~(0b00011000)) & 0xFF
         reg |= val
-        self._write_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG6_XL, reg)
+        self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG, reg)
         if val == ACCELRANGE_2G:
             self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_2G
         elif val == ACCELRANGE_4G:
@@ -289,7 +320,7 @@ class MPU9250:
           - GYROSCALE_500DPS
           - GYROSCALE_2000DPS
         """
-        reg = self._read_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG1_G)
+        reg = self._read_u8(_XGTYPE, _MPU9250_GYRO_CONFIG) # Corrected.
         return (reg & 0b00011000) & 0xFF
 
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
