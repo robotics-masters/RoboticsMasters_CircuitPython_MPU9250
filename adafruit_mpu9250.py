@@ -194,47 +194,47 @@ class MPU9250:
 
     
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
-    def __init__(self, i2c, address=_MPU9250_ADDRESS_ACCELGYRO,):
-        ## soft reset & reboot accel/gyro
-	# reset - set bit 7 to reset MPU9250 
-        self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x80) 
-	time.sleep(0.01)
+    def __init__(self, i2c, address=_MPU9250_ADDRESS_ACCELGYRO,
+			 	accel_fs=ACCELRANGE_2G
+				gyro_fs=GYROSCALE_245DPS):
+
+	# Check ID register for accel/gyro.
+        if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
+            raise RuntimeError('Could not find MPU9250, check wiring!')
+	
 
 	# wake up device - clear sleep mode bit (6), enable all sensors
 	self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
-	time.sleep(0.01)
+	time.sleep(0.1)
 	
 	# get stable time source - 
 	self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x01)
-	time.sleep(0.02)
+	time.sleep(0.2)
 
 	# configure gyro and themometer
 	# disable Fsync and set above to 41 and 42 Hz respectively;
 	self._write_u8(_XGTYPE, _MPU9250_CONFIG, 0x03)
 
 	# set sample rate = gyroscope output rate/(1 + SMPLRT_DIV)
-	self._write_u8(_XGTYPE, _MPU9250_SMPLRT_DIV, 0x03)  #TODO: Fix this.
+	#self._write_u8(_XGTYPE, _MPU9250_SMPLRT_DIV, 0x03)  #TODO: Fix this.
         
 	## Set gyroscope full scale range
-	reg = self.gyro_scale()
-	reg = reg & ~0x02 # Clear Fchoice bits [1:0]
-	reg = reg & ~0x18 # Clear AFS bits [4:3]
-	reg = reg | 0x03 << 3 # set full scale range for gyro TODO: Fix this.
-	self.gyro_scale(reg) # write new value
+	self.gyro_scale(gyro_fs) # write new value
 
 	## Set accelerometer full-scale range configuration
-	reg = self.accel_range()
-	reg = reg & ~0x18 # Clear AFS bits[4:3]
-	reg = reg | 0x03 << 3 # set full scale range for accel TODO: Fix this.
-	self.accel_range(reg)
+	self.accel_range(accel_fs)
 
 	## Set accelerometer sample rate config
-	reg = 
+	#
+	
+	## Set I2C By-Pass
+	self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x22)
+	self._write_u8(_XGTYPE, _MPU9250_ENABLE, 0x01)
+	time.sleep(0.1)
 
-	time.sleep(0.01)
-        # Check ID register for accel/gyro.
-        if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
-            raise RuntimeError('Could not find MPU9250, check wiring!')
+
+
+
         # setup I2C bypass for magnetometer
         
 
