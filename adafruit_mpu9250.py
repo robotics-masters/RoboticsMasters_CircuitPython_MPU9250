@@ -149,6 +149,10 @@ _MPU9250_REGISTER_MAG_YOUT_H      = const(0x06)
 _MPU9250_REGISTER_MAG_ZOUT_L      = const(0x07)
 _MPU9250_REGISTER_MAG_ZOUT_H      = const(0x08)
 _MPU9250_REGISTER_STATUS_REG2_M   = const(0x09) # ST2
+_MPU9250_REGISTER_ASTC_M          = const(0x0C) # self-test
+_MPU9250_REGISTER_MAG_ASAX        = const(0x10)
+_MPU9250_REGISTER_MAG_ASAY        = const(0x11)
+_MPU9250_REGISTER_MAG_ASAZ        = const(0x12)
 
 
 ##  See Page 51 of Documentation for information about this register.
@@ -196,11 +200,10 @@ class MPU9250:
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
     def __init__(self, address=_MPU9250_ADDRESS_ACCELGYRO):
         ### ACCEL and GYRO SETUP
-        print("Looking for MPU2950 Device...")
         # Check ID register for accel/gyro.
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
             raise RuntimeError('Could not find MPU9250, check wiring!')
-        print("Found MPU2950 Device!")
+        
         # wake up device - clear sleep mode bit (6), enable all sensors
         self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
         time.sleep(0.1)
@@ -215,14 +218,6 @@ class MPU9250:
 
         # set sample rate = gyroscope output rate/(1 + SMPLRT_DIV)
         self._write_u8(_XGTYPE, _MPU9250_SMPLRT_DIV, 0x04)
-        
-        ## Set gyroscope full scale range
-        ## CHANGE VALUE HERE (HARDCODE WARNING)
-        self.gyro_scale = GYROSCALE_245DPS # write new value
-
-        ## Set accelerometer full-scale range configuration
-        ## CHANGE VALUE HERE (HARDCODE WARNING)
-        self.accel_range = ACCELRANGE_2G
 
         ## Set accelerometer sample rate configuration
         self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
@@ -238,29 +233,32 @@ class MPU9250:
         if self._read_u8(_MAGTYPE, _MPU9250_REGISTER_WHO_AM_I_M) != _MPU9250_MAG_ID:
             raise RuntimeError('Could not find MPU9250 Magnetometer, enable I2C bypass!')
         print("successfully found Magenetometer")
-        # cont mode 1
-        #self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, ((0x01 << 4) | 0x02) # 16bit|8hz
-        #self._write_u8(_MAGTYPE, _
+        # cont mode 1 - 16 Bit 8Hz
+        #self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, ((0x01 << 4) | 0x02)) # 16bit|8hz
+        #self._write_u8(_MAGTYPE, _MPU9250_REGISTER_ASTC_M, 0x00)
     
-        # setup I2C bypass for magnetometer
+        # Sensitivity Ajustment Values
+        self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CNTL_M, 0x0F)
+        asax = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAX)
+        asay = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAY)
+        asaz = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAZ)
+
+        self._adjustments = (
+            (0.5 * (asax -128)) / 128 + 1,
+            (0.5 * (asax -128)) / 128 + 1,
+            (0.5 * (asax -128)) / 128 + 1
+        )
         
+        # power on
+        self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, (0x02 | 0x10)) # 8hz 16bit
 
-        # soft reset & reboot magnetometer
-
-        # enable gyro continuous
-
-        # enable accel continuous
-
-
-        # enable mag continuous
-
-        # set default ranges for the various sensors
-
-
-
-
-
-        
+        ### Default ranges for various sensor
+        self._accel_mg_lsb = None
+        self._mag_mgauss_lsb = 4800.0 / 32760
+        self._gyro_dps_digit = None
+        self.accel_range = ACCELRANGE_2G
+        #self.mag_gain = MAGGAIN_4GAUSS
+        self.gyro_scale = GYROSCALE_245DPS
 
     
     @property
@@ -309,36 +307,6 @@ class MPU9250:
         reg |= 0x03
         self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, reg)
 
-    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
-    @property
-    def mag_gain(self):
-        """The magnetometer gain.  Must be a value of:
-          - MAGGAIN_4GAUSS
-          - MAGGAIN_8GAUSS
-          - MAGGAIN_12GAUSS
-          - MAGGAIN_16GAUSS
-        """
-        reg = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_CTRL_REG2_M)
-        return (reg & 0b01100000) & 0xFF
-
-    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
-    @mag_gain.setter
-    def mag_gain(self, val):
-        assert val in (MAGGAIN_4GAUSS, MAGGAIN_8GAUSS, MAGGAIN_12GAUSS,
-                       MAGGAIN_16GAUSS)
-        reg = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_CTRL_REG2_M)
-        reg = (reg & ~(0b01100000)) & 0xFF
-        reg |= val
-        self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CTRL_REG2_M, reg)
-        if val == MAGGAIN_4GAUSS:
-            self._mag_mgauss_lsb = _MPU9250_MAG_MGAUSS_4GAUSS
-        elif val == MAGGAIN_8GAUSS:
-            self._mag_mgauss_lsb = _MPU9250_MAG_MGAUSS_8GAUSS
-        elif val == MAGGAIN_12GAUSS:
-            self._mag_mgauss_lsb = _MPU9250_MAG_MGAUSS_12GAUSS
-        elif val == MAGGAIN_16GAUSS:
-            self._mag_mgauss_lsb = _MPU9250_MAG_MGAUSS_16GAUSS
-
     @property
     def gyro_scale(self):
         """The gyroscope scale.  Must be a value of:
@@ -351,13 +319,11 @@ class MPU9250:
 
     @gyro_scale.setter
     def gyro_scale(self, val):
-        print("gyro scale start")
         assert val in (GYROSCALE_245DPS, GYROSCALE_500DPS, GYROSCALE_2000DPS)
-        print("pass assert")
+
         reg = self._read_u8(_XGTYPE, _MPU9250_GYRO_CONFIG)
         reg = (reg & ~(0b00011000)) & 0xFF
         reg |= val
-        print("pass bitshift")
         self._write_u8(_XGTYPE, _MPU9250_GYRO_CONFIG, reg)
         if val == GYROSCALE_245DPS:
             self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_245DPS
@@ -394,8 +360,9 @@ class MPU9250:
         magnetometer property!
         """
         # Read the magnetometer
-        self._read_bytes(_MAGTYPE, 0x80 | _MPU9250_REGISTER_MAG_XOUT_L, 6,
+        self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
                          self._BUFFER)
+        self._read_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG2_M)
         raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
