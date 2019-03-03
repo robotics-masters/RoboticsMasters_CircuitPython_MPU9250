@@ -194,53 +194,54 @@ class MPU9250:
 
     
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
-    def __init__(self, i2c, address=_MPU9250_ADDRESS_ACCELGYRO,
-			 	accel_fs=ACCELRANGE_2G
-				gyro_fs=GYROSCALE_245DPS):
-	### ACCEL and GYRO SETUP
-	# Check ID register for accel/gyro.
+    def __init__(self, address=_MPU9250_ADDRESS_ACCELGYRO):
+        ### ACCEL and GYRO SETUP
+        print("Looking for MPU2950 Device...")
+        # Check ID register for accel/gyro.
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
             raise RuntimeError('Could not find MPU9250, check wiring!')
-	
-	# wake up device - clear sleep mode bit (6), enable all sensors
-	self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
-	time.sleep(0.1)
-	
-	# get stable time source - 
-	self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x01)
-	time.sleep(0.2)
+        print("Found MPU2950 Device!")
+        # wake up device - clear sleep mode bit (6), enable all sensors
+        self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
+        time.sleep(0.1)
+    
+        # get stable time source - 
+        self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x01)
+        time.sleep(0.2)
 
-	# configure gyro and themometer
-	# disable Fsync and set above to 41 and 42 Hz respectively;
-	self._write_u8(_XGTYPE, _MPU9250_CONFIG, 0x03)
+        # configure gyro and themometer
+        # disable Fsync and set above to 41 and 42 Hz respectively;
+        self._write_u8(_XGTYPE, _MPU9250_CONFIG, 0x03)
 
-	# set sample rate = gyroscope output rate/(1 + SMPLRT_DIV)
-	self._write_u8(_XGTYPE, _MPU9250_SMPLRT_DIV, 0x04)
+        # set sample rate = gyroscope output rate/(1 + SMPLRT_DIV)
+        self._write_u8(_XGTYPE, _MPU9250_SMPLRT_DIV, 0x04)
         
-	## Set gyroscope full scale range
-	self.gyro_scale(gyro_fs) # write new value
+        ## Set gyroscope full scale range
+        ## CHANGE VALUE HERE (HARDCODE WARNING)
+        self.gyro_scale(GYROSCALE_245DPS) # write new value
 
-	## Set accelerometer full-scale range configuration
-	self.accel_range(accel_fs)
+        ## Set accelerometer full-scale range configuration
+        ## CHANGE VALUE HERE (HARDCODE WARNING)
+        self.accel_range(ACCELRANGE_2G)
 
-	## Set accelerometer sample rate configuration
-	self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
-	
-	## Set I2C By-Pass
-	self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x22) # could also be 0x02 or 0x12
-	self._write_u8(_XGTYPE, _MPU9250_ENABLE, 0x01)
-	time.sleep(0.1)
+        ## Set accelerometer sample rate configuration
+        self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
+        
+        ## Set I2C By-Pass
+        self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x22) # could also be 0x02 or 0x12
+        self._write_u8(_XGTYPE, _MPU9250_ENABLE, 0x01)
+        time.sleep(0.1)
 
 
-	### MAGNETOMETER SETUP
-	# Check ID register for mag.
+        ### MAGNETOMETER SETUP
+        # Check ID register for mag.
         if self._read_u8(_MAGTYPE, _MPU9250_REGISTER_WHO_AM_I_M) != _MPU9250_MAG_ID:
             raise RuntimeError('Could not find MPU9250 Magnetometer, enable I2C bypass!')
-
-	# cont mode 1
-	self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, ((0x01 << 4) | 0x02) # 16bit|8hz
-	self._write_u8(_MAGTYPE, _
-	
+        print("successfully found Magenetometer")
+        # cont mode 1
+        #self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, ((0x01 << 4) | 0x02) # 16bit|8hz
+        #self._write_u8(_MAGTYPE, _
+    
         # setup I2C bypass for magnetometer
         
 
@@ -354,10 +355,10 @@ class MPU9250:
     def gyro_scale(self, val):
         
         assert val in (GYROSCALE_245DPS, GYROSCALE_500DPS, GYROSCALE_2000DPS)
-        reg = self._read_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG1_G)
+        reg = self._read_u8(_XGTYPE, _MPU9250_GYRO_CONFIG)
         reg = (reg & ~(0b00011000)) & 0xFF
         reg |= val
-        self._write_u8(_XGTYPE, _MPU9250_REGISTER_CTRL_REG1_G, reg)
+        self._write_u8(_XGTYPE, _MPU9250_GYRO_CONFIG, reg)
         if val == GYROSCALE_245DPS:
             self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_245DPS
         elif val == GYROSCALE_500DPS:
