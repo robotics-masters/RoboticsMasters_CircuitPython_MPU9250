@@ -218,18 +218,18 @@ class MPU9250:
         
         ## Set gyroscope full scale range
         ## CHANGE VALUE HERE (HARDCODE WARNING)
-        self.gyro_scale(GYROSCALE_245DPS) # write new value
+        self.gyro_scale = GYROSCALE_245DPS # write new value
 
         ## Set accelerometer full-scale range configuration
         ## CHANGE VALUE HERE (HARDCODE WARNING)
-        self.accel_range(ACCELRANGE_2G)
+        self.accel_range = ACCELRANGE_2G
 
         ## Set accelerometer sample rate configuration
         self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
         
         ## Set I2C By-Pass
         self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x22) # could also be 0x02 or 0x12
-        self._write_u8(_XGTYPE, _MPU9250_ENABLE, 0x01)
+        self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
         time.sleep(0.1)
 
 
@@ -339,7 +339,6 @@ class MPU9250:
         elif val == MAGGAIN_16GAUSS:
             self._mag_mgauss_lsb = _MPU9250_MAG_MGAUSS_16GAUSS
 
-    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
     @property
     def gyro_scale(self):
         """The gyroscope scale.  Must be a value of:
@@ -350,14 +349,15 @@ class MPU9250:
         reg = self._read_u8(_XGTYPE, _MPU9250_GYRO_CONFIG) # Corrected.
         return (reg & 0b00011000) & 0xFF
 
-    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
     @gyro_scale.setter
     def gyro_scale(self, val):
-        
+        print("gyro scale start")
         assert val in (GYROSCALE_245DPS, GYROSCALE_500DPS, GYROSCALE_2000DPS)
+        print("pass assert")
         reg = self._read_u8(_XGTYPE, _MPU9250_GYRO_CONFIG)
         reg = (reg & ~(0b00011000)) & 0xFF
         reg |= val
+        print("pass bitshift")
         self._write_u8(_XGTYPE, _MPU9250_GYRO_CONFIG, reg)
         if val == GYROSCALE_245DPS:
             self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_245DPS
