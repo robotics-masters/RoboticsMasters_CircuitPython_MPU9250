@@ -243,7 +243,7 @@ class MPU9250:
         asay = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAY)
         asaz = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAZ)
 
-        self._adjustments = (
+        self._adjustment_mag = (
             (0.5 * (asax -128)) / 128 + 1,
             (0.5 * (asax -128)) / 128 + 1,
             (0.5 * (asax -128)) / 128 + 1
@@ -363,6 +363,19 @@ class MPU9250:
         self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
                          self._BUFFER)
         self._read_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG2_M)
+        
+        # apply factory axial sensitivity adjustments
+        # self._BUFFER[0] *= self._adjustment_mag[0]
+        # self._BUFFER[1] *= self._adjustment_mag[1]
+        # self._BUFFER[2] *= self._adjustment_mag[2]
+        
+        # # apply output scale determined in constructor
+        # so = 0.15
+        # self._BUFFER[0] *= so
+        # self._BUFFER[1] *= so
+        # self._BUFFER[2] *= so
+        
+
         raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
@@ -374,6 +387,35 @@ class MPU9250:
         raw = self.read_mag_raw()
         return map(lambda x: x * self._mag_mgauss_lsb / 1000.0, raw)
 
+
+	def calibrate_mag(self):
+		raw = self.readmag_raw()
+		
+		mag_temp = [0, 0, 0]
+		mag_min = [0,0,0]
+		mag_max = [0,0,0]
+		
+		sample_count = 128
+		i = 0
+		array = [0, 1, 2]
+		
+		while i < sample_count:
+			raw = self.readmag_raw()
+			for x in array:
+				if raw[x] > mag_max[x]:
+					mag_max[x] = raw[x]
+				if raw[x] < mag_min[x]:
+					mag_min = raw[x]
+			i++
+			time.sleep(0.135)
+		
+		
+		
+		
+		
+		
+		
+		
     def read_gyro_raw(self):
         """Read the raw gyroscope sensor values and return it as a
         3-tuple of X, Y, Z axis values that are 16-bit unsigned values.  If you
