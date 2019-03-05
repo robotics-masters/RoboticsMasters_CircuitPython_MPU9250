@@ -222,18 +222,12 @@ class MPU9250:
         ## Set accelerometer sample rate configuration
         self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
 
-        print("setting up bypass")
-        ## Set I2C By-Pass
-        reg = self._read_u8(_XGTYPE, _MPU9250_INT_PIN_CFG)
-        reg &= ~0x02
-        reg |= 0x02
-        self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, reg) # could also be 0x02 or 0x12
-        #self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
-        time.sleep(0.1)
+        self.configure_bypass()
 
 
         ### MAGNETOMETER SETUP
         # Check ID register for mag.
+        print(self._read_u8(_MAGTYPE, _MPU9250_REGISTER_WHO_AM_I_M))
         if self._read_u8(_MAGTYPE, _MPU9250_REGISTER_WHO_AM_I_M) != _MPU9250_MAG_ID:
             raise RuntimeError('Could not find MPU9250 Magnetometer, enable I2C bypass!')
         print("successfully found Magenetometer")
@@ -449,6 +443,16 @@ class MPU9250:
 
         return self._offset_mag, self._scale_mag
 
+    def configure_bypass(self):
+        print("setting up bypass")
+        ## Set I2C By-Pass
+        #reg = self._read_u8(_XGTYPE, _MPU9250_INT_PIN_CFG)
+        #reg &= ~0x02
+        #reg |= 0x02
+        self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x02) # could also be 0x02, 0x22, 0x12
+        self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
+        time.sleep(0.1)
+
     def read_gyro_raw(self):
         """Read the raw gyroscope sensor values and return it as a
         3-tuple of X, Y, Z axis values that are 16-bit unsigned values.  If you
@@ -517,6 +521,7 @@ class MPU9250_I2C(MPU9250):
     """Driver for the MPU9250 connect over I2C."""
 
     def __init__(self, i2c):
+        #super().__init__()
         self._xg_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_ACCELGYRO)
         self._mag_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_MAG)
         super().__init__()
