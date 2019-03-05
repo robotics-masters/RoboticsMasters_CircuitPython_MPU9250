@@ -48,7 +48,7 @@ try:
     import struct
 except ImportError:
     import ustruct as struct
-    
+
 import adafruit_bus_device.i2c_device as i2c_device
 import adafruit_bus_device.spi_device as spi_device
 from micropython import const
@@ -100,7 +100,7 @@ _MPU9250_ZA_OFFSET_L        = const(0x7E)
 _MPU9250_SMPLRT_DIV             = const(0x19)
 _MPU9250_CONFIG                 = const(0x1A)
 _MPU9250_GYRO_CONFIG            = const(0x1B)
-_MPU9250_ACCEL_CONFIG           = const(0x1C)   
+_MPU9250_ACCEL_CONFIG           = const(0x1C)
 _MPU9250_ACCEL_CONFIG2          = const(0x1D)
 #_MPU9250_LP_ACCEL_ODR           = const(0x1E)
 #_MPU9250_WOM_THR                = const(0x1F)
@@ -190,25 +190,25 @@ def _twos_comp(val, bits):
 
 class MPU9250:
     """Driver for the MPU9250 accelerometer, magnetometer, gyroscope."""
-    
+
     # Class-level buffer for reading and writing data with the sensor.
     # This reduces memory allocations but means the code is not re-entrant or
     # thread safe!
     _BUFFER = bytearray(6)
 
-    
+
     # TODO:  Fix this for the MPU9250 - it has different registers and methods.
     def __init__(self, address=_MPU9250_ADDRESS_ACCELGYRO):
         ### ACCEL and GYRO SETUP
         # Check ID register for accel/gyro.
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
             raise RuntimeError('Could not find MPU9250, check wiring!')
-        
+
         # wake up device - clear sleep mode bit (6), enable all sensors
         self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
         time.sleep(0.1)
-    
-        # get stable time source - 
+
+        # get stable time source -
         self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x01)
         time.sleep(0.2)
 
@@ -221,7 +221,7 @@ class MPU9250:
 
         ## Set accelerometer sample rate configuration
         self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
-        
+
         ## Set I2C By-Pass
         self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x22) # could also be 0x02 or 0x12
         self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
@@ -236,7 +236,7 @@ class MPU9250:
         # cont mode 1 - 16 Bit 8Hz
         #self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, ((0x01 << 4) | 0x02)) # 16bit|8hz
         #self._write_u8(_MAGTYPE, _MPU9250_REGISTER_ASTC_M, 0x00)
-    
+
         # Sensitivity Ajustment Values
         self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CNTL_M, 0x0F)
 
@@ -269,7 +269,7 @@ class MPU9250:
         #self._mag_mgauss_lsb = 4800.0 / 32760
         #self.mag_gain = MAGGAIN_4GAUSS
 
-    
+
     @property
     def accel_range(self):
         """The accelerometer range.  Must be a value of:
@@ -280,7 +280,7 @@ class MPU9250:
         """
         reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG) # corrected.
         return (reg & 0b00011000) & 0xFF
-    
+
     @accel_range.setter
     def accel_range(self, val):
         assert val in (ACCELRANGE_2G, ACCELRANGE_4G, ACCELRANGE_8G,
@@ -306,7 +306,7 @@ class MPU9250:
         """
         reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2) # corrected.
         return (reg & 0b00011000) & 0xFF
-    
+
     @accel_rate.setter
     def accel_rate(self, val):
         assert val in (ACCELRANGE_2G, ACCELRANGE_4G, ACCELRANGE_8G,
@@ -340,7 +340,7 @@ class MPU9250:
             self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_500DPS
         elif val == GYROSCALE_2000DPS:
             self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_2000DPS
-    
+
     def read_accel_raw(self):
         """Read the raw accelerometer sensor values and return it as a
         3-tuple of X, Y, Z axis values that are 16-bit unsigned values.  If you
@@ -370,7 +370,7 @@ class MPU9250:
         """
         # Read the magnetometer
         xyz = self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
-                         self._BUFFER)        
+                         self._BUFFER)
 
         raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
@@ -401,7 +401,8 @@ class MPU9250:
         return tuple(raw)
 
     # Taken from @eike-welk/python_mpu9250
-    def calibrate_mag(self, count=256, delay=200): raw = self.readmag_raw()
+    def calibrate_mag(self, count=256, delay=200):
+        raw = self.readmag_raw()
         self._offset_mag = (0,0,0)
         self._scale_mag = (1,1,1)
 
@@ -441,9 +442,9 @@ class MPU9250:
         scale_z = avg_delta / avg_delta_z
 
         self._scale_mag = (scale_x, scale_y, scale_z)
-        
-    return self._offset_mag, self._scale_mag    
-        
+
+        return self._offset_mag, self._scale_mag
+
     def read_gyro_raw(self):
         """Read the raw gyroscope sensor values and return it as a
         3-tuple of X, Y, Z axis values that are 16-bit unsigned values.  If you
@@ -463,7 +464,7 @@ class MPU9250:
         """
         raw = self.read_gyro_raw()
         return map(lambda x: x * self._gyro_dps_digit, raw)
-    
+
     def read_temp_raw(self):
         """Read the raw temperature sensor value and return it as a 12-bit
         signed value.  If you want the temperature in nice units you probably
@@ -505,7 +506,7 @@ class MPU9250:
         # magnetometer, or _XGTYPE when talking to the accel or gyro.
         # MUST be implemented by subclasses!
         raise NotImplementedError()
-        
+
 
 # TODO: Test if working (copied from Adafruit/LSM9DS1)
 class MPU9250_I2C(MPU9250):
@@ -546,4 +547,3 @@ class MPU9250_I2C(MPU9250):
             self._BUFFER[0] = address & 0xFF
             self._BUFFER[1] = val & 0xFF
             i2c.write(self._BUFFER, end=2)
-        
