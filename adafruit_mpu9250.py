@@ -222,9 +222,13 @@ class MPU9250:
         ## Set accelerometer sample rate configuration
         self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
 
+        print("setting up bypass")
         ## Set I2C By-Pass
-        self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x22) # could also be 0x02 or 0x12
-        self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
+        reg = self._read_u8(_XGTYPE, _MPU9250_INT_PIN_CFG)
+        reg &= ~0x02
+        reg |= 0x02
+        self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, reg) # could also be 0x02 or 0x12
+        #self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
         time.sleep(0.1)
 
 
@@ -513,8 +517,8 @@ class MPU9250_I2C(MPU9250):
     """Driver for the MPU9250 connect over I2C."""
 
     def __init__(self, i2c):
-        self._mag_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_MAG)
         self._xg_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_ACCELGYRO)
+        self._mag_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_MAG)
         super().__init__()
 
     def _read_u8(self, sensor_type, address):
