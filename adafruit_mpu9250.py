@@ -442,8 +442,8 @@ class MPU9250:
 
         self._scale_mag = (scale_x, scale_y, scale_z)
         
-	return self._offset_mag, self._scale_mag	
-		
+    return self._offset_mag, self._scale_mag    
+        
     def read_gyro_raw(self):
         """Read the raw gyroscope sensor values and return it as a
         3-tuple of X, Y, Z axis values that are 16-bit unsigned values.  If you
