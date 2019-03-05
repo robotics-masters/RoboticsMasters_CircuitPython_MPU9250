@@ -239,16 +239,22 @@ class MPU9250:
     
         # Sensitivity Ajustment Values
         self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CNTL_M, 0x0F)
+
         asax = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAX)
         asay = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAY)
         asaz = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAZ)
+
+        self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CNTL_M, 0x00)
+
+        # Should wait at least 100us before next mode
+        time.sleep(100e-6) #RaspberryPi much faster than original platform
 
         self._adjustment_mag = (
             (0.5 * (asax -128)) / 128 + 1,
             (0.5 * (asax -128)) / 128 + 1,
             (0.5 * (asax -128)) / 128 + 1
         )
-        
+
         # power on
         self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, (0x02 | 0x10)) # 8hz 16bit
 
@@ -258,9 +264,9 @@ class MPU9250:
         self.accel_range = ACCELRANGE_2G
         self.gyro_scale = GYROSCALE_245DPS
         # magnetometer variables
-        self._mag_scale = (1,1,1)
-        self._mag_offset = (0,0,0)
-        self._mag_mgauss_lsb = 4800.0 / 32760
+        self._scale_mag = (1,1,1)
+        self._offset_mag = (0,0,0)
+        #self._mag_mgauss_lsb = 4800.0 / 32760
         #self.mag_gain = MAGGAIN_4GAUSS
 
     
@@ -363,21 +369,8 @@ class MPU9250:
         magnetometer property!
         """
         # Read the magnetometer
-        self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
-                         self._BUFFER)
-        self._read_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG2_M)
-        
-        # apply factory axial sensitivity adjustments
-        # self._BUFFER[0] *= self._adjustment_mag[0]
-        # self._BUFFER[1] *= self._adjustment_mag[1]
-        # self._BUFFER[2] *= self._adjustment_mag[2]
-        
-        # # apply output scale determined in constructor
-        # so = 0.15
-        # self._BUFFER[0] *= so
-        # self._BUFFER[1] *= so
-        # self._BUFFER[2] *= so
-        
+        xyz = self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
+                         self._BUFFER)        
 
         raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
@@ -388,12 +381,29 @@ class MPU9250:
         gauss values.
         """
         raw = self.read_mag_raw()
-        return map(lambda x: x * self._mag_mgauss_lsb / 1000.0, raw)
+        self._read_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG2_M)
+
+        # Apply factory axial sensitivy adjustments
+        raw[0] *= self._adjustment_mag[0]
+        raw[1] *= self._adjustment_mag[1]
+        raw[2] *= self._adjustment_mag[2]
+
+        # Apply hard iron ie. offset bias from calibration
+        raw[0] -= self._offset_mag[0]
+        raw[1] -= self._offset_mag[1]
+        raw[2] -= self._offset_mag[2]
+
+        # Apply soft iron ie. scale bias from calibration
+        raw[0] *= self._scale_mag[0]
+        raw[1] *= self._scale_mag[1]
+        raw[2] *= self._scale_mag[2]
+
+        return tuple(raw)
 
     # Taken from @eike-welk/python_mpu9250
     def calibrate_mag(self, count=256, delay=200): raw = self.readmag_raw()
-        self._offset = (0,0,0)
-        self._scale = (1,1,1)
+        self._offset_mag = (0,0,0)
+        self._scale_mag = (1,1,1)
 
         reading = self.magnetic
 
@@ -417,7 +427,7 @@ class MPU9250:
         offset_y = (maxy + miny) / 2
         offset_z = (maxz + minz) / 2
 
-        self._offset = (offset_x, offset_y, offset_z)
+        self._offset_mag = (offset_x, offset_y, offset_z)
 
         # Soft iron correction
         avg_delta_x = (maxx - minx) / 2
@@ -430,9 +440,9 @@ class MPU9250:
         scale_y = avg_delta / avg_delta_y
         scale_z = avg_delta / avg_delta_z
 
-        self._scale = (scale_x, scale_y, scale_z)
+        self._scale_mag = (scale_x, scale_y, scale_z)
         
-	return self._offset, self._scale	
+	return self._offset_mag, self._scale_mag	
 		
     def read_gyro_raw(self):
         """Read the raw gyroscope sensor values and return it as a
