@@ -131,10 +131,6 @@ ACCELRANGE_2G                = (0b00 << 3)
 ACCELRANGE_16G               = (0b01 << 3)
 ACCELRANGE_4G                = (0b10 << 3)
 ACCELRANGE_8G                = (0b11 << 3)
-MAGGAIN_4GAUSS               = (0b00 << 5)  # +/- 4 gauss
-MAGGAIN_8GAUSS               = (0b01 << 5)  # +/- 8 gauss
-MAGGAIN_12GAUSS              = (0b10 << 5)  # +/- 12 gauss
-MAGGAIN_16GAUSS              = (0b11 << 5)  # +/- 16 gauss
 GYROSCALE_245DPS             = (0b00 << 3)  # +/- 245 degrees/s rotation
 GYROSCALE_500DPS             = (0b01 << 3)  # +/- 500 degrees/s rotation
 GYROSCALE_2000DPS            = (0b11 << 3)  # +/- 2000 degrees/s rotation
@@ -206,8 +202,8 @@ class MPU9250:
 
         self._adjustment_mag = (
             (0.5 * (asax -128)) / 128 + 1,
-            (0.5 * (asax -128)) / 128 + 1,
-            (0.5 * (asax -128)) / 128 + 1
+            (0.5 * (asay -128)) / 128 + 1,
+            (0.5 * (asaz -128)) / 128 + 1
         )
 
         # power on
