@@ -196,8 +196,6 @@ class MPU9250:
     # thread safe!
     _BUFFER = bytearray(6)
 
-
-    # TODO:  Fix this for the MPU9250 - it has different registers and methods.
     def __init__(self, address=_MPU9250_ADDRESS_ACCELGYRO):
         ### ACCEL and GYRO SETUP
         # Check ID register for accel/gyro.
@@ -227,10 +225,8 @@ class MPU9250:
 
         ### MAGNETOMETER SETUP
         # Check ID register for mag.
-        print(self._read_u8(_MAGTYPE, _MPU9250_REGISTER_WHO_AM_I_M))
         if self._read_u8(_MAGTYPE, _MPU9250_REGISTER_WHO_AM_I_M) != _MPU9250_MAG_ID:
             raise RuntimeError('Could not find MPU9250 Magnetometer, enable I2C bypass!')
-        print("successfully found Magenetometer")
         # cont mode 1 - 16 Bit 8Hz
         #self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, ((0x01 << 4) | 0x02)) # 16bit|8hz
         #self._write_u8(_MAGTYPE, _MPU9250_REGISTER_ASTC_M, 0x00)
@@ -378,7 +374,7 @@ class MPU9250:
         """The magnetometer X, Y, Z axis values as a 3-tuple of
         gauss values.
         """
-        raw = self.read_mag_raw()
+        raw = list(self.read_mag_raw())
         self._read_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG2_M)
 
         # Apply factory axial sensitivy adjustments
@@ -444,7 +440,6 @@ class MPU9250:
         return self._offset_mag, self._scale_mag
 
     def configure_bypass(self):
-        print("setting up bypass")
         ## Set I2C By-Pass
         #reg = self._read_u8(_XGTYPE, _MPU9250_INT_PIN_CFG)
         #reg &= ~0x02
