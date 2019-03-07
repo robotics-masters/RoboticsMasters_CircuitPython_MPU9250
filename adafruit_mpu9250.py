@@ -206,6 +206,8 @@ class MPU9250:
             (0.5 * (asaz -128)) / 128 + 1
         )
 
+        del asax, asay, asaz
+
         # power on
         self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, (0x02 | 0x10)) # 8hz 16bit
 
@@ -319,7 +321,7 @@ class MPU9250:
         magnetometer property!
         """
         # Read the magnetometer
-        xyz = self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
+        self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
                          self._BUFFER)
 
         raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
