@@ -229,7 +229,7 @@ class MPU9250:
           - ACCELRANGE_8G
           - ACCELRANGE_16G
         """
-        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG) # corrected.
+        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG)
         return (reg & 0b00011000) & 0xFF
 
     @accel_range.setter
@@ -249,13 +249,12 @@ class MPU9250:
         elif val == ACCELRANGE_16G:
             self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_16G
 
-    # TODO: Patch these two methods up
     @property
     def accel_rate(self):
         """The accelerometer sample rate.  Must be a value of:
           - UNKNOWN
         """
-        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2) # corrected.
+        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2)
         return (reg & 0b00011000) & 0xFF
 
     @accel_rate.setter
@@ -274,7 +273,7 @@ class MPU9250:
           - GYROSCALE_500DPS
           - GYROSCALE_2000DPS
         """
-        reg = self._read_u8(_XGTYPE, _MPU9250_GYRO_CONFIG) # Corrected.
+        reg = self._read_u8(_XGTYPE, _MPU9250_GYRO_CONFIG)
         return (reg & 0b00011000) & 0xFF
 
     @gyro_scale.setter
@@ -398,9 +397,6 @@ class MPU9250:
 
     def configure_bypass(self):
         ## Set I2C By-Pass
-        #reg = self._read_u8(_XGTYPE, _MPU9250_INT_PIN_CFG)
-        #reg &= ~0x02
-        #reg |= 0x02
         self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x02) # could also be 0x02, 0x22, 0x12
         self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
         time.sleep(0.1)
@@ -473,7 +469,6 @@ class MPU9250_I2C(MPU9250):
     """Driver for the MPU9250 connect over I2C."""
 
     def __init__(self, i2c):
-        #super().__init__()
         self._xg_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_ACCELGYRO)
         self._mag_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_MAG)
         super().__init__()
