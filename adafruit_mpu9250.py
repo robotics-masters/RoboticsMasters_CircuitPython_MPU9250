@@ -380,6 +380,8 @@ class MPU9250:
 
         self._offset_mag = (offset_x, offset_y, offset_z)
 
+        del offset_x, offset_y, offset_z
+
         # Soft iron correction
         avg_delta_x = (maxx - minx) / 2
         avg_delta_y = (maxy - miny) / 2
@@ -391,7 +393,11 @@ class MPU9250:
         scale_y = avg_delta / avg_delta_y
         scale_z = avg_delta / avg_delta_z
 
+        del avg_delta_x, avg_delta_y, avg_delta_z, avg_delta
+
         self._scale_mag = (scale_x, scale_y, scale_z)
+
+        del scale_x, scale_y, scale_z
 
         return self._offset_mag, self._scale_mag
 
