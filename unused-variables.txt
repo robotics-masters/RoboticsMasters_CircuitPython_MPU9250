@@ -1,0 +1,5 @@
+MAGGAIN_4GAUSS               = (0b00 << 5)  # +/- 4 gauss
+MAGGAIN_8GAUSS               = (0b01 << 5)  # +/- 8 gauss
+MAGGAIN_12GAUSS              = (0b10 << 5)  # +/- 12 gauss
+MAGGAIN_16GAUSS              = (0b11 << 5)  # +/- 16 gauss
+

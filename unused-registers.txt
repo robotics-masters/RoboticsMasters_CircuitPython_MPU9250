@@ -1,0 +1,38 @@
+## MPU6500 - Accel and Gyro
+_MPU9250_SELF_TEST_X_GYRO       = const(0x00)
+_MPU9250_SELF_TEST_Y_GYRO       = const(0x01)
+_MPU9250_SELF_TEST_Z_GYRO       = const(0x02)
+_MPU9250_SELF_TEST_X_ACCEL       = const(0x0D)
+_MPU9250_SELF_TEST_Y_ACCEL       = const(0x0E)
+_MPU9250_SELF_TEST_Z_ACCEL       = const(0x0F)
+
+_MPU9250_XG_OFFSET_H            = const(0x13)
+_MPU9250_XG_OFFSET_L            = const(0x14)
+_MPU9250_YG_OFFSET_H            = const(0x15)
+_MPU9250_YG_OFFSET_L            = const(0x16)
+_MPU9250_ZG_OFFSET_H            = const(0x17)
+_MPU9250_ZG_OFFSET_L            = const(0x18)
+_MPU9250_XA_OFFSET_H        = const(0x77)
+_MPU9250_XA_OFFSET_L        = const(0x78)
+_MPU9250_YA_OFFSET_H        = const(0x7A)
+_MPU9250_YA_OFFSET_L        = const(0x7B)
+_MPU9250_ZA_OFFSET_H        = const(0x7D)
+_MPU9250_ZA_OFFSET_L        = const(0x7E)
+
+#_MPU9250_LP_ACCEL_ODR           = const(0x1E)
+#_MPU9250_WOM_THR                = const(0x1F)
+
+_MPU9250_FIFO_EN                = const(0x23)
+_MPU9250_I2C_MST_CTRL           = const(0x24)
+_MPU9250_I2C_SLV0_ADDR          = const(0x25)
+_MPU9250_I2C_SLV0_REG           = const(0x26)
+_MPU9250_I2C_SLV0_CTRL          = const(0x27)
+#_MPU9250_I2C_MST_STATUS         = const(0x36)
+
+_MPU9250_USER_CTRL      = const(0x6A)
+_MPU9250_PWR_MGMT_2     = const(0x6C)
+
+_MPU9250_FIFO_COUNT_H     = const(0x72)
+_MPU9250_FIFO_COUNT_L     = const(0x73)
+_MPU9250_FIFO_R_W         = const(0x74)
+

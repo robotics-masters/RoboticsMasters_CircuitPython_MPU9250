@@ -64,10 +64,6 @@ _MPU9250_ACCEL_MG_LSB_2G         = 0.061
 _MPU9250_ACCEL_MG_LSB_4G         = 0.122
 _MPU9250_ACCEL_MG_LSB_8G         = 0.244
 _MPU9250_ACCEL_MG_LSB_16G        = 0.732
-_MPU9250_MAG_MGAUSS_4GAUSS       = 0.14
-_MPU9250_MAG_MGAUSS_8GAUSS       = 0.29
-_MPU9250_MAG_MGAUSS_12GAUSS      = 0.43
-_MPU9250_MAG_MGAUSS_16GAUSS      = 0.58
 _MPU9250_GYRO_DPS_DIGIT_245DPS   = 0.00875
 _MPU9250_GYRO_DPS_DIGIT_500DPS   = 0.01750
 _MPU9250_GYRO_DPS_DIGIT_2000DPS  = 0.07000
@@ -77,40 +73,11 @@ _MPU9250_TEMP_LSB_DEGREE_CELSIUS = 8 # 1°C = 8, 25° = 200, etc.
 ## MPU6500 - Accel and Gyro
 _MPU9250_REGISTER_WHO_AM_I_XG    = const(0x75) #reports 0x71
 
-_MPU9250_SELF_TEST_X_GYRO       = const(0x00)
-_MPU9250_SELF_TEST_Y_GYRO       = const(0x01)
-_MPU9250_SELF_TEST_Z_GYRO       = const(0x02)
-_MPU9250_SELF_TEST_X_ACCEL       = const(0x0D)
-_MPU9250_SELF_TEST_Y_ACCEL       = const(0x0E)
-_MPU9250_SELF_TEST_Z_ACCEL       = const(0x0F)
-
-_MPU9250_XG_OFFSET_H            = const(0x13)
-_MPU9250_XG_OFFSET_L            = const(0x14)
-_MPU9250_YG_OFFSET_H            = const(0x15)
-_MPU9250_YG_OFFSET_L            = const(0x16)
-_MPU9250_ZG_OFFSET_H            = const(0x17)
-_MPU9250_ZG_OFFSET_L            = const(0x18)
-_MPU9250_XA_OFFSET_H        = const(0x77)
-_MPU9250_XA_OFFSET_L        = const(0x78)
-_MPU9250_YA_OFFSET_H        = const(0x7A)
-_MPU9250_YA_OFFSET_L        = const(0x7B)
-_MPU9250_ZA_OFFSET_H        = const(0x7D)
-_MPU9250_ZA_OFFSET_L        = const(0x7E)
-
 _MPU9250_SMPLRT_DIV             = const(0x19)
 _MPU9250_CONFIG                 = const(0x1A)
 _MPU9250_GYRO_CONFIG            = const(0x1B)
 _MPU9250_ACCEL_CONFIG           = const(0x1C)
 _MPU9250_ACCEL_CONFIG2          = const(0x1D)
-#_MPU9250_LP_ACCEL_ODR           = const(0x1E)
-#_MPU9250_WOM_THR                = const(0x1F)
-
-_MPU9250_FIFO_EN                = const(0x23)
-_MPU9250_I2C_MST_CTRL           = const(0x24)
-_MPU9250_I2C_SLV0_ADDR          = const(0x25)
-_MPU9250_I2C_SLV0_REG           = const(0x26)
-_MPU9250_I2C_SLV0_CTRL          = const(0x27)
-#_MPU9250_I2C_MST_STATUS         = const(0x36)
 
 _MPU9250_INT_PIN_CFG            = const(0x37) # for bypass
 _MPU9250_INT_ENABLE             = const(0x38) # for bypass
@@ -130,13 +97,7 @@ _MPU9250_REGISTER_GYRO_YOUT_L      = const(0x46)
 _MPU9250_REGISTER_GYRO_ZOUT_H      = const(0x47)
 _MPU9250_REGISTER_GYRO_ZOUT_L      = const(0x48)
 
-_MPU9250_USER_CTRL      = const(0x6A)
 _MPU9250_PWR_MGMT_1     = const(0x6B)
-_MPU9250_PWR_MGMT_2     = const(0x6C)
-
-_MPU9250_FIFO_COUNT_H     = const(0x72)
-_MPU9250_FIFO_COUNT_L     = const(0x73)
-_MPU9250_FIFO_R_W         = const(0x74)
 
 
 ## AK8963 - Magenetometer
