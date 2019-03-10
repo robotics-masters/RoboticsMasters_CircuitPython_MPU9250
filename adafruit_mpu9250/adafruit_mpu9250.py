@@ -212,6 +212,8 @@ class MPU9250:
 
         # power on
         self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CNTL_M, (0b00000010 | 0b00010000)) # 8hz 16bit
+        self._read_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG2_M)
+        sleep(0.1)
 
         ### Default ranges for various sensor
         self._accel_mg_lsb = None
