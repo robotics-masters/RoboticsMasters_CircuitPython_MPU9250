@@ -124,6 +124,8 @@ _MAGTYPE                         = True
 _XGTYPE                          = False
 _SENSORS_GRAVITY_STANDARD        = 9.80665
 
+_I2C_BYPASS_MASK = 0b00000010
+_I2C_BYPASS_EN = 0b00000010
 
 # User facing constants/module globals.
 ACCELRANGE_2G                = (0b00 << 3)
@@ -157,7 +159,7 @@ class MPU9250:
         # Check ID register for accel/gyro.
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
             raise RuntimeError('Could not find MPU9250, check wiring!')
-
+        
         # wake up device - clear sleep mode bit (6), enable all sensors
         self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
         time.sleep(0.1)
@@ -176,7 +178,12 @@ class MPU9250:
         ## Set accelerometer sample rate configuration
         self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
 
-        self.configure_bypass()
+        ## Set I2C By-Pass
+        #self._read_u8(_XGTYPE, _MPU9250_INT_PIN_CFG)
+        #self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x02) # could also be 0x02, 0x22, 0x12
+        #self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)       
+        
+        #self.configure_bypass()
 
 
         ### MAGNETOMETER SETUP
@@ -403,6 +410,12 @@ class MPU9250:
         return self._offset_mag, self._scale_mag
 
     def configure_bypass(self):
+        ## Enable I2C bypass to access for MPU9250 magnetometer access.
+        #char = self._read_u8(_XGTYPE, _MPU9250_INT_PIN_CFG)
+        #char &= ~0x02 # clear I2C bits
+        #char |= 0x02
+        #self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, char)
+        
         ## Set I2C By-Pass
         self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x02) # could also be 0x02, 0x22, 0x12
         self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
@@ -471,7 +484,6 @@ class MPU9250:
         raise NotImplementedError()
 
 
-# TODO: Test if working (copied from Adafruit/LSM9DS1)
 class MPU9250_I2C(MPU9250):
     """Driver for the MPU9250 connect over I2C."""
 
