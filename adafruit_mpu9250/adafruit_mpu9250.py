@@ -124,8 +124,6 @@ _MAGTYPE                         = True
 _XGTYPE                          = False
 _SENSORS_GRAVITY_STANDARD        = 9.80665
 
-_I2C_BYPASS_MASK = 0b00000010
-_I2C_BYPASS_EN = 0b00000010
 
 # User facing constants/module globals.
 ACCELRANGE_2G                = (0b00 << 3)
@@ -179,11 +177,7 @@ class MPU9250:
         self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
 
         ## Set I2C By-Pass
-        #self._read_u8(_XGTYPE, _MPU9250_INT_PIN_CFG)
-        #self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x02) # could also be 0x02, 0x22, 0x12
-        #self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)       
-        
-        #self.configure_bypass()
+        # Done at Initialisation by I2C Library.
 
 
         ### MAGNETOMETER SETUP
@@ -410,6 +404,10 @@ class MPU9250:
         return self._offset_mag, self._scale_mag
 
     def configure_bypass(self):
+        # Check ID register for accel/gyro.
+        if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
+            raise RuntimeError('Could not find MPU9250, check wiring!')
+        
         ## Enable I2C bypass to access for MPU9250 magnetometer access.
         #char = self._read_u8(_XGTYPE, _MPU9250_INT_PIN_CFG)
         #char &= ~0x02 # clear I2C bits
@@ -489,8 +487,18 @@ class MPU9250_I2C(MPU9250):
 
     def __init__(self, i2c):
         self._xg_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_ACCELGYRO)
+        self._bypass()
         self._mag_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_MAG)
         super().__init__()
+
+    def _bypass(self):
+        # This is cheating, but we won't tell.
+        # Check ID register for accel/gyro - because it technically is not initialised
+        if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
+            raise RuntimeError('Could not find MPU9250, check wiring!')
+        ## Set I2C By-Pass
+        self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x02) # could also be 0x02, 0x22, 0x12
+        self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
 
     def _read_u8(self, sensor_type, address):
         if sensor_type == _MAGTYPE:
