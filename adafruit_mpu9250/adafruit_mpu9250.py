@@ -43,7 +43,7 @@ Implementation Notes
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/robotics-masters/RoboticsMasters_CircuitPython_MPU9250.git"
 
-import time
+from time import sleep
 try:
     import struct
 except ImportError:
@@ -160,11 +160,11 @@ class MPU9250:
         
         # wake up device - clear sleep mode bit (6), enable all sensors
         self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
-        time.sleep(0.1)
+        sleep(0.1)
 
         # get stable time source -
         self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x01)
-        time.sleep(0.2)
+        sleep(0.2)
 
         # configure gyro and themometer
         # disable Fsync and set above to 41 and 42 Hz respectively;
@@ -194,11 +194,12 @@ class MPU9250:
         asax = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAX)
         asay = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAY)
         asaz = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAZ)
-
+        
+        self._read_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG2_M)
         self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CNTL_M, 0x00)
 
         # Should wait at least 100us before next mode
-        time.sleep(100e-6) #RaspberryPi much faster than original platform
+        sleep(100e-6) #RaspberryPi much faster than original platform
 
         self._adjustment_mag = (
             (0.5 * (asax -128)) / 128 + 1,
@@ -219,6 +220,7 @@ class MPU9250:
         # magnetometer variables
         self._scale_mag = (1,1,1)
         self._offset_mag = (0,0,0)
+        self._mag_calibrated = False
         #self._mag_mgauss_lsb = 4800.0 / 32760
         #self.mag_gain = MAGGAIN_4GAUSS
 
@@ -323,6 +325,7 @@ class MPU9250:
         # Read the magnetometer
         self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
                          self._BUFFER)
+        sleep(0.02)
 
         raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
@@ -340,17 +343,18 @@ class MPU9250:
         raw[1] *= self._adjustment_mag[1]
         raw[2] *= self._adjustment_mag[2]
 
-        # Apply hard iron ie. offset bias from calibration
-        raw[0] -= self._offset_mag[0]
-        raw[1] -= self._offset_mag[1]
-        raw[2] -= self._offset_mag[2]
+        if self._mag_calibrated:
+            # Apply hard iron ie. offset bias from calibration
+            raw[0] -= self._offset_mag[0]
+            raw[1] -= self._offset_mag[1]
+            raw[2] -= self._offset_mag[2]
 
-        # Apply soft iron ie. scale bias from calibration
-        raw[0] *= self._scale_mag[0]
-        raw[1] *= self._scale_mag[1]
-        raw[2] *= self._scale_mag[2]
+            # Apply soft iron ie. scale bias from calibration
+            raw[0] *= self._scale_mag[0]
+            raw[1] *= self._scale_mag[1]
+            raw[2] *= self._scale_mag[2]
 
-        return tuple(raw)
+        return (raw[0], raw[1], raw[2])
 
     # Taken from @eike-welk/python_mpu9250
     def calibrate_mag(self, count=256, delay=200):
@@ -365,7 +369,7 @@ class MPU9250:
         minz = maxz = reading[2]
 
         while count:
-            time.sleep(delay / 1000)
+            sleep(delay / 1000)
             reading = self.magnetic
             minx = min(minx, reading[0])
             maxx = max(maxx, reading[0])
@@ -400,6 +404,8 @@ class MPU9250:
         self._scale_mag = (scale_x, scale_y, scale_z)
 
         del scale_x, scale_y, scale_z
+
+        self._mag_calibrated = True
 
         return self._offset_mag, self._scale_mag
 
@@ -482,7 +488,7 @@ class MPU9250_I2C(MPU9250):
             raise RuntimeError('Could not find MPU9250, check wiring!')
         ## Set I2C By-Pass
         self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x02) # could also be 0x02, 0x22, 0x12
-        #self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
+        self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
 
     def _read_u8(self, sensor_type, address):
         if sensor_type == _MAGTYPE:
