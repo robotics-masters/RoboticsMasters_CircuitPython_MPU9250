@@ -80,6 +80,8 @@ _MPU9250_ACCEL_CONFIG2          = const(0x1D)
 
 _MPU9250_INT_PIN_CFG            = const(0x37) # for bypass
 _MPU9250_INT_ENABLE             = const(0x38) # for bypass
+_I2C_BYPASS_MASK = 0b00000010
+_I2C_BYPASS_EN = 0b00000010
 
 _MPU9250_REGISTER_ACCEL_XOUT_H     = const(0x3B)
 _MPU9250_REGISTER_ACCEL_XOUT_L     = const(0x3C)
@@ -487,8 +489,12 @@ class MPU9250_I2C(MPU9250):
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
             raise RuntimeError('Could not find MPU9250, check wiring!')
         ## Set I2C By-Pass
-        self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x02) # could also be 0x02, 0x22, 0x12
-        self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
+        #self._write_u8(_XGTYPE, _MPU9250_INT_PIN_CFG, 0x02) # could also be 0x02, 0x22, 0x12
+        #self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, 0x01)
+        char = self._read_u8(_XGTYPE, _MPU9250_INT_PIN_CFG)
+        char &= ~_I2C_BYPASS_MASK # clear I2C bits
+        char |= _I2C_BYPASS_EN
+        self._write_u8(_XGTYPE, _MPU9250_INT_ENABLE, char)
 
     def _read_u8(self, sensor_type, address):
         if sensor_type == _MAGTYPE:
