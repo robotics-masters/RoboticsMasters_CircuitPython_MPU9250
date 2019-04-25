@@ -54,7 +54,7 @@ from micropython import const
 
 # Internal constants and register values:
 # pylint: disable=bad-whitespace
-_MPU9250_ADDRESS_ACCELGYRO       = const(0x68) #corrected
+_MPU9250_ADDRESS_ACCELGYRO       = const(0x69) #corrected
 _MPU9250_ADDRESS_MAG             = const(0x0C) #corrected - bypass
 _MPU9250_XG_ID                   = const(0b01110001) #corrected (0x71)
 _MPU9250_MAG_ID                  = const(0b01001000) #corrected (0x48) 0 1 0 0   1 0 0 0
