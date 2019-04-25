@@ -155,6 +155,7 @@ class MPU9250:
     _BUFFER = bytearray(6)
 
     def __init__(self, address=_MPU9250_ADDRESS_ACCELGYRO):
+        self.address = address
         ### ACCEL and GYRO SETUP
         # Check ID register for accel/gyro.
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
@@ -478,8 +479,8 @@ class MPU9250:
 class MPU9250_I2C(MPU9250):
     """Driver for the MPU9250 connect over I2C."""
 
-    def __init__(self, i2c):
-        self._xg_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_ACCELGYRO)
+    def __init__(self, i2c, address=_MPU9250_ADDRESS_ACCELGYRO):
+        self._xg_device = i2c_device.I2CDevice(i2c, address)
         self._bypass()
         self._mag_device = i2c_device.I2CDevice(i2c, _MPU9250_ADDRESS_MAG)
         super().__init__()
