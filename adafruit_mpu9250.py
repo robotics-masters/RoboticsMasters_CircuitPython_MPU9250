@@ -67,7 +67,8 @@ _MPU9250_GYRO_DPS_DIGIT_245DPS   = 0.00875
 _MPU9250_GYRO_DPS_DIGIT_500DPS   = 0.01750
 _MPU9250_GYRO_DPS_DIGIT_2000DPS  = 0.07000
 _MPU9250_TEMP_LSB_DEGREE_CELSIUS = 8 # 1°C = 8, 25° = 200, etc.
-
+_MPU9250_TEMP_SENS = 333.87
+_MPU9250_TEMP_OFFSET = 21
 
 ## MPU6500 - Accel and Gyro
 _MPU9250_REGISTER_WHO_AM_I_XG    = const(0x75) #reports 0x71
@@ -451,7 +452,7 @@ class MPU9250:
         # See discussion from:
         #  https://github.com/kriswiner/LSM9DS1/issues/3
         temp = self.read_temp_raw()
-        temp = 27.5 + temp/16
+        temp = ((temp - _MPU9250_TEMP_OFFSET) / _MPU9250_TEMP_SENS) + _MPU9250_TEMP_OFFSET
         return temp
 
     def _read_u8(self, sensor_type, address):
