@@ -440,7 +440,7 @@ class MPU9250:
         want to use the temperature property!
         """
         # Read temp sensor
-        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_TEMP_OUT_L, 2,
+        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_TEMP_OUT_H, 2,
                          self._BUFFER)
         temp = ((self._BUFFER[1] << 8) | self._BUFFER[0]) >> 4
         return _twos_comp(temp, 12)
