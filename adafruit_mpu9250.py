@@ -440,17 +440,13 @@ class MPU9250:
         want to use the temperature property!
         """
         # Read temp sensor
-        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_TEMP_OUT_H, 2,
-                         self._BUFFER)
-        temp = ((self._BUFFER[1] << 8) | self._BUFFER[0]) >> 4
+        self._read_bytes(_XGTYPE, _MPU9250_REGISTER_TEMP_OUT_H, 2, self._BUFFER)
+        temp = ((self._BUFFER[0] << 8) | self._BUFFER[1])
         return _twos_comp(temp, 12)
 
     @property
     def temperature(self):
         """The temperature of the sensor in degrees Celsius."""
-        # This is just a guess since the starting point (21C here) isn't documented :(
-        # See discussion from:
-        #  https://github.com/kriswiner/LSM9DS1/issues/3
         temp = self.read_temp_raw()
         temp = ((temp - _MPU9250_TEMP_OFFSET) / _MPU9250_TEMP_SENS) + _MPU9250_TEMP_OFFSET
         return temp

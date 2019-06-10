@@ -9,4 +9,5 @@ while True:
 	print(sensor.acceleration)
 	print(sensor.gyro)
 	print(sensor.magnetic)
-	time.sleep(1000)
+	print(sensor.temperature)
+	time.sleep(2.5)
