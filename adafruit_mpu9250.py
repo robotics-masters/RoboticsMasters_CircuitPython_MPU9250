@@ -121,10 +121,10 @@ ACCELRANGE_4G                = 0b00001000
 ACCELRANGE_8G                = 0b00010000
 ACCELRANGE_16G               = 0b00011000
 
-_MPU9250_ACCEL_MG_LSB_2G         = 0.061  # (mg) 2.0 / 32768.0
-_MPU9250_ACCEL_MG_LSB_4G         = 0.122  # (mg) 4.0 / 32768.0
-_MPU9250_ACCEL_MG_LSB_8G         = 0.244  # (mg) 8.0 / 32768.0
-_MPU9250_ACCEL_MG_LSB_16G        = 0.488  # (mg) 16.0 / 32768.0
+_MPU9250_ACCEL_MG_LSB_2G         = 16384 # 0.061  # (mg) 2.0 / 32768.0
+_MPU9250_ACCEL_MG_LSB_4G         = 8192  # 0.122  # (mg) 4.0 / 32768.0
+_MPU9250_ACCEL_MG_LSB_8G         = 4096  # 0.244  # (mg) 8.0 / 32768.0
+_MPU9250_ACCEL_MG_LSB_16G        = 2048  # 0.488  # (mg) 16.0 / 32768.0
 
 GYROSCALE_250DPS             = 0b00000000  # +/- 245 degrees/s rotation
 GYROSCALE_500DPS             = 0b00001000  # +/- 500 degrees/s rotation
@@ -178,20 +178,19 @@ class MPU9250:
         # wake up device - clear sleep mode bit (6), enable all sensors
         self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
         sleep(0.1)
-
-        # get stable time source -
-        self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x01)
+        
+        self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x01) # get stable time source
         sleep(0.2)
 
         # configure gyro and themometer
-        # disable Fsync and set above to 41 and 42 Hz respectively;
-        self._write_u8(_XGTYPE, _MPU9250_CONFIG, 0x03)
+        self._write_u8(_XGTYPE, _MPU9250_CONFIG, 0x03)  # disable Fsync and set above to 41 and 42 Hz respectively
 
         # set sample rate = gyroscope output rate/(1 + SMPLRT_DIV)
         self._write_u8(_XGTYPE, _MPU9250_SMPLRT_DIV, 0x04)
+        self.gyro_scale = gyro_fs
 
-        ## Set accelerometer sample rate configuration
-        self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)
+        self.accel_range = accel_fs
+        self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, 0x03)  # Set accelerometer sample rate configuration
 
         ## Set I2C By-Pass
         # Done at Initialisation by I2C Library.
@@ -230,11 +229,6 @@ class MPU9250:
         self._read_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG2_M)
         sleep(0.1)
 
-        ### Default ranges for various sensor
-        self._accel_mg_lsb = None
-        self._gyro_dps_digit = None
-        self.accel_range = ACCELRANGE_2G
-        self.gyro_scale = GYROSCALE_245DPS
         # magnetometer variables
         self._scale_mag = (1,1,1)
         self._offset_mag = (0,0,0)
@@ -254,14 +248,20 @@ class MPU9250:
         reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG)
         return (reg & 0b00011000) & 0xFF
 
+    @property
+    def accel_rate(self):
+        """The accelerometer sample rate.  Must be a value of: 0x03
+        """
+        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2)
+        return (reg & 0b00011000) & 0xFF
+
     @accel_range.setter
     def accel_range(self, val):
-        assert val in (ACCELRANGE_2G, ACCELRANGE_4G, ACCELRANGE_8G,
-                       ACCELRANGE_16G)
-        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG)
-        reg = (reg & ~(0b00011000)) & 0xFF
-        reg |= val
-        self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG, reg)
+        assert val in (ACCELRANGE_2G, ACCELRANGE_4G, 
+                       ACCELRANGE_8G, ACCELRANGE_16G)
+        
+        self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG, val)
+        
         if val == ACCELRANGE_2G:
             self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_2G
         elif val == ACCELRANGE_4G:
@@ -271,28 +271,14 @@ class MPU9250:
         elif val == ACCELRANGE_16G:
             self._accel_mg_lsb = _MPU9250_ACCEL_MG_LSB_16G
 
-    @property
-    def accel_rate(self):
-        """The accelerometer sample rate.  Must be a value of:
-          - UNKNOWN
-        """
-        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2)
-        return (reg & 0b00011000) & 0xFF
-
-    @accel_rate.setter
-    def accel_rate(self, val):
-        assert val in (ACCELRANGE_2G, ACCELRANGE_4G, ACCELRANGE_8G,
-                       ACCELRANGE_16G)
-        reg = self._read_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2)
-        reg = reg & ~0x0F
-        reg |= 0x03
-        self._write_u8(_XGTYPE, _MPU9250_ACCEL_CONFIG2, reg)
+        return self._accel_mg_lsb
 
     @property
     def gyro_scale(self):
         """The gyroscope scale.  Must be a value of:
-          - GYROSCALE_245DPS
+          - GYROSCALE_250DPS
           - GYROSCALE_500DPS
+          - GYROSCALE_1000DPS
           - GYROSCALE_2000DPS
         """
         reg = self._read_u8(_XGTYPE, _MPU9250_GYRO_CONFIG)
@@ -300,18 +286,22 @@ class MPU9250:
 
     @gyro_scale.setter
     def gyro_scale(self, val):
-        assert val in (GYROSCALE_245DPS, GYROSCALE_500DPS, GYROSCALE_2000DPS)
+        assert val in (GYROSCALE_250DPS, GYROSCALE_500DPS, 
+                       GYROSCALE_1000DPS, GYROSCALE_2000DPS)
 
-        reg = self._read_u8(_XGTYPE, _MPU9250_GYRO_CONFIG)
-        reg = (reg & ~(0b00011000)) & 0xFF
-        reg |= val
-        self._write_u8(_XGTYPE, _MPU9250_GYRO_CONFIG, reg)
-        if val == GYROSCALE_245DPS:
-            self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_245DPS
+        self._write_u8(_XGTYPE, _MPU9250_GYRO_CONFIG, val)
+
+        if val == GYROSCALE_250DPS:
+            self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_250DPS
         elif val == GYROSCALE_500DPS:
             self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_500DPS
+        elif val == GYROSCALE_1000DPS:
+            self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_1000DPS
         elif val == GYROSCALE_2000DPS:
             self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_2000DPS
+
+        return self._gyro_dps_digit
+
 
     def read_accel_raw(self):
         """Read the raw accelerometer sensor values and return it as a
@@ -321,10 +311,7 @@ class MPU9250:
         """
         # Read the accelerometer
         self._read_bytes(_XGTYPE, _MPU9250_REGISTER_ACCEL_XOUT_H, 6, self._BUFFER)
-        raw_x = ((self._BUFFER[0] << 8) | self._BUFFER[1])
-        raw_y = ((self._BUFFER[2] << 8) | self._BUFFER[3])
-        raw_z = ((self._BUFFER[4] << 8) | self._BUFFER[5])
-        #raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
+        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
     @property
@@ -332,11 +319,10 @@ class MPU9250:
         """The accelerometer X, Y, Z axis values as a 3-tuple of
         m/s^2 values.
         """
+        so = self._accel_mg_lsb
+        sf = self._accel_unit
         raw = self.read_accel_raw()
-        print("raw: ", raw)
-        return turple([value / so * sf for value in raw])
-        #return map(lambda x: x * self._accel_mg_lsb / 1000.0 * _SENSORS_GRAVITY_STANDARD,
-        #           raw)
+        return tuple([value / so * sf for value in raw])
 
     def read_mag_raw(self):
         """Read the raw magnetometer sensor values and return it as a
@@ -345,10 +331,7 @@ class MPU9250:
         magnetometer property!
         """
         # Read the magnetometer
-        self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
-                         self._BUFFER)
-        sleep(0.02)
-
+        self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6, self._BUFFER)
         raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 

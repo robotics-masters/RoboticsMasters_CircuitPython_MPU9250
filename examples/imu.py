@@ -12,4 +12,4 @@ while True:
     print('Magnetometer (gauss): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(*sensor.magnetic))
     print('Gyroscope (degrees/sec): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(*sensor.gyro))
     print('Temperature: {0:0.3f}C'.format(sensor.temperature))
-    sleep(2.5)
+    sleep(0.5)
