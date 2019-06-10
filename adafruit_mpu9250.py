@@ -59,17 +59,6 @@ _MPU9250_ADDRESS_MAG             = const(0x0C) #corrected - bypass
 _MPU9250_XG_ID                   = const(0b01110001) #corrected (0x71)
 _MPU9250_MAG_ID                  = const(0b01001000) #corrected (0x48) 0 1 0 0   1 0 0 0
 
-_MPU9250_ACCEL_MG_LSB_2G         = 0.061
-_MPU9250_ACCEL_MG_LSB_4G         = 0.122
-_MPU9250_ACCEL_MG_LSB_8G         = 0.244
-_MPU9250_ACCEL_MG_LSB_16G        = 0.732
-_MPU9250_GYRO_DPS_DIGIT_245DPS   = 0.00875
-_MPU9250_GYRO_DPS_DIGIT_500DPS   = 0.01750
-_MPU9250_GYRO_DPS_DIGIT_2000DPS  = 0.07000
-_MPU9250_TEMP_LSB_DEGREE_CELSIUS = 8 # 1°C = 8, 25° = 200, etc.
-_MPU9250_TEMP_SENS = 333.87
-_MPU9250_TEMP_OFFSET = 21
-
 ## MPU6500 - Accel and Gyro
 _MPU9250_REGISTER_WHO_AM_I_XG    = const(0x75) #reports 0x71
 
@@ -122,20 +111,38 @@ _MPU9250_REGISTER_MAG_ASAZ        = const(0x12)
 ##   Link: https://www.invensense.com/wp-content/uploads/2015/02/RM-MPU-9250A-00-v1.6.pdf
 _MPU9250_REGISTER_CNTL_M    = const(0x0A) #corrected - RW (CNTL)
 
-
 _MAGTYPE                         = True
 _XGTYPE                          = False
 _SENSORS_GRAVITY_STANDARD        = 9.80665
 
-
 # User facing constants/module globals.
-ACCELRANGE_2G                = (0b00 << 3)
-ACCELRANGE_16G               = (0b01 << 3)
-ACCELRANGE_4G                = (0b10 << 3)
-ACCELRANGE_8G                = (0b11 << 3)
-GYROSCALE_245DPS             = (0b00 << 3)  # +/- 245 degrees/s rotation
-GYROSCALE_500DPS             = (0b01 << 3)  # +/- 500 degrees/s rotation
-GYROSCALE_2000DPS            = (0b11 << 3)  # +/- 2000 degrees/s rotation
+ACCELRANGE_2G                = 0b00000000
+ACCELRANGE_4G                = 0b00001000
+ACCELRANGE_8G                = 0b00010000
+ACCELRANGE_16G               = 0b00011000
+
+_MPU9250_ACCEL_MG_LSB_2G         = 0.061  # (mg) 2.0 / 32768.0
+_MPU9250_ACCEL_MG_LSB_4G         = 0.122  # (mg) 4.0 / 32768.0
+_MPU9250_ACCEL_MG_LSB_8G         = 0.244  # (mg) 8.0 / 32768.0
+_MPU9250_ACCEL_MG_LSB_16G        = 0.488  # (mg) 16.0 / 32768.0
+
+GYROSCALE_250DPS             = 0b00000000  # +/- 245 degrees/s rotation
+GYROSCALE_500DPS             = 0b00001000  # +/- 500 degrees/s rotation
+GYROSCALE_1000DPS            = 0b00010000  # +/- 500 degrees/s rotation
+GYROSCALE_2000DPS            = 0b00011000  # +/- 2000 degrees/s rotation
+
+_MPU9250_GYRO_DPS_DIGIT_250DPS   = 250.0 / 32768.0
+_MPU9250_GYRO_DPS_DIGIT_500DPS   = 500.0 / 32768.0
+_MPU9250_GYRO_DPS_DIGIT_1000DPS  = 1000.0 / 32768.0
+_MPU9250_GYRO_DPS_DIGIT_2000DPS  = 2000.0 / 32768.0
+
+SF_G = 1
+SF_M_M2 = 9.80665
+SF_DEG_S = 1
+SF_RAD_S = 0.017453292519943
+
+_MPU9250_TEMP_SENS = 333.87
+_MPU9250_TEMP_OFFSET = 21
 # pylint: enable=bad-whitespace
 
 
@@ -155,13 +162,19 @@ class MPU9250:
     # thread safe!
     _BUFFER = bytearray(6)
 
-    def __init__(self, address=_MPU9250_ADDRESS_ACCELGYRO):
+    def __init__(self, address=_MPU9250_ADDRESS_ACCELGYRO, busnum=1,
+                  accel_fs=ACCELRANGE_2G, gyro_fs=GYROSCALE_250DPS,
+                  accel_unit=SF_M_M2, gyro_unit=SF_RAD_S,
+                  gyro_offset=(0,0,0)
+    ):
         self.address = address
+        self._accel_unit = accel_unit
+        self._gyro_unit = gyro_unit
         ### ACCEL and GYRO SETUP
         # Check ID register for accel/gyro.
         if self._read_u8(_XGTYPE, _MPU9250_REGISTER_WHO_AM_I_XG) != _MPU9250_XG_ID:
             raise RuntimeError('Could not find MPU9250, check wiring!')
-        
+
         # wake up device - clear sleep mode bit (6), enable all sensors
         self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
         sleep(0.1)
@@ -307,9 +320,11 @@ class MPU9250:
         accelerometer property!
         """
         # Read the accelerometer
-        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_ACCEL_XOUT_L, 6,
-                         self._BUFFER)
-        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
+        self._read_bytes(_XGTYPE, _MPU9250_REGISTER_ACCEL_XOUT_H, 6, self._BUFFER)
+        raw_x = ((self._BUFFER[0] << 8) | self._BUFFER[1])
+        raw_y = ((self._BUFFER[2] << 8) | self._BUFFER[3])
+        raw_z = ((self._BUFFER[4] << 8) | self._BUFFER[5])
+        #raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
     @property
@@ -318,8 +333,10 @@ class MPU9250:
         m/s^2 values.
         """
         raw = self.read_accel_raw()
-        return map(lambda x: x * self._accel_mg_lsb / 1000.0 * _SENSORS_GRAVITY_STANDARD,
-                   raw)
+        print("raw: ", raw)
+        return turple([value / so * sf for value in raw])
+        #return map(lambda x: x * self._accel_mg_lsb / 1000.0 * _SENSORS_GRAVITY_STANDARD,
+        #           raw)
 
     def read_mag_raw(self):
         """Read the raw magnetometer sensor values and return it as a
@@ -421,7 +438,7 @@ class MPU9250:
         gyroscope property!
         """
         # Read the gyroscope
-        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_GYRO_XOUT_L, 6,
+        self._read_bytes(_XGTYPE, _MPU9250_REGISTER_GYRO_XOUT_H, 6,
                          self._BUFFER)
         raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
