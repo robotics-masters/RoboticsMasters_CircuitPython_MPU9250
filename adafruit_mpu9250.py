@@ -328,11 +328,11 @@ class MPU9250:
         magnetometer property!
         """
         # Read the magnetometer
-        self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
+        self._read_bytes(_MAGTYPE, 0x80 | _MPU9250_REGISTER_MAG_XOUT_H, 6,
                          self._BUFFER)
         sleep(0.02)
 
-        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
+        raw_x, raw_y, raw_z = struct.unpack_from('>hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
     @property
@@ -421,9 +421,9 @@ class MPU9250:
         gyroscope property!
         """
         # Read the gyroscope
-        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_GYRO_XOUT_L, 6,
+        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_GYRO_XOUT_H, 6,
                          self._BUFFER)
-        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
+        raw_x, raw_y, raw_z = struct.unpack_from('>hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
     @property
