@@ -307,9 +307,9 @@ class MPU9250:
         accelerometer property!
         """
         # Read the accelerometer
-        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_ACCEL_XOUT_L, 6,
+        self._read_bytes(_XGTYPE, 0x80 | _MPU9250_REGISTER_ACCEL_XOUT_H, 6,
                          self._BUFFER)
-        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
+        raw_x, raw_y, raw_z = struct.unpack_from('>hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
     @property
