@@ -188,9 +188,6 @@ class MPU9250:
         # Check ID register for mag.
         if self._read_u8(_MAGTYPE, _MPU9250_REGISTER_WHO_AM_I_M) != _MPU9250_MAG_ID:
             raise RuntimeError('Could not find MPU9250 Magnetometer, enable I2C bypass!')
-        # cont mode 1 - 16 Bit 8Hz
-        #self._write_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG1_M, ((0x01 << 4) | 0x02)) # 16bit|8hz
-        #self._write_u8(_MAGTYPE, _MPU9250_REGISTER_ASTC_M, 0x00)
 
         # Sensitivity Ajustment Values
         self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CNTL_M, 0x0F)
@@ -214,8 +211,10 @@ class MPU9250:
 
         # power on
         self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CNTL_M, (0b00000010 | 0b00010000)) # 8hz 16bit
+        self._so = 0.15
         self._read_u8(_MAGTYPE, _MPU9250_REGISTER_STATUS_REG2_M)
         sleep(0.1)
+        
 
         ### Default ranges for various sensor
         self._accel_mg_lsb = None
@@ -228,6 +227,7 @@ class MPU9250:
         self._mag_calibrated = False
         #self._mag_mgauss_lsb = 4800.0 / 32760
         #self.mag_gain = MAGGAIN_4GAUSS
+        
 
 
     @property
@@ -328,11 +328,11 @@ class MPU9250:
         magnetometer property!
         """
         # Read the magnetometer
-        self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_H, 6,
+        self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_L, 6,
                          self._BUFFER)
         sleep(0.02)
 
-        raw_x, raw_y, raw_z = struct.unpack_from('>hhh', self._BUFFER[0:6])
+        raw_x, raw_y, raw_z = struct.unpack_from('<hhh', self._BUFFER[0:6])
         return (raw_x, raw_y, raw_z)
 
     @property
