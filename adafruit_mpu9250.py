@@ -70,6 +70,16 @@ _MPU9250_TEMP_LSB_DEGREE_CELSIUS = 8 # 1°C = 8, 25° = 200, etc.
 _MPU9250_TEMP_SENS = 333.87
 _MPU9250_TEMP_OFFSET = 21
 
+_GYRO_SO_250DPS = 131
+_GYRO_SO_500DPS = 62.5
+_GYRO_SO_1000DPS = 32.8
+_GYRO_SO_2000DPS = 16.4
+
+SF_G = 1
+SF_M_S2 = 9.80665 # 1 g = 9.80665 m/s2 ie. standard gravity
+SF_DEG_S = 1
+SF_RAD_S = 0.017453292519943 # 1 deg/s is 0.017453292519943 rad/s
+
 ## MPU6500 - Accel and Gyro
 _MPU9250_REGISTER_WHO_AM_I_XG    = const(0x75) #reports 0x71
 
@@ -183,7 +193,6 @@ class MPU9250:
         ## Set I2C By-Pass
         # Done at Initialisation by I2C Library.
 
-
         ### MAGNETOMETER SETUP
         # Check ID register for mag.
         if self._read_u8(_MAGTYPE, _MPU9250_REGISTER_WHO_AM_I_M) != _MPU9250_MAG_ID:
@@ -221,6 +230,9 @@ class MPU9250:
         self._gyro_dps_digit = None
         self.accel_range = ACCELRANGE_2G
         self.gyro_scale = GYROSCALE_245DPS
+        self._gyro_so = _GYRO_SO_250DPS
+        self._gyro_sf = SF_RAD_S
+        self._gyro_offset = (0, 0, 0)
         # magnetometer variables
         self._scale_mag = (1,1,1)
         self._offset_mag = (0,0,0)
@@ -228,7 +240,6 @@ class MPU9250:
         #self._mag_mgauss_lsb = 4800.0 / 32760
         #self.mag_gain = MAGGAIN_4GAUSS
         
-
 
     @property
     def accel_range(self):
@@ -292,6 +303,7 @@ class MPU9250:
         reg = self._read_u8(_XGTYPE, _MPU9250_GYRO_CONFIG)
         reg = (reg & ~(0b00011000)) & 0xFF
         reg |= val
+
         self._write_u8(_XGTYPE, _MPU9250_GYRO_CONFIG, reg)
         if val == GYROSCALE_245DPS:
             self._gyro_dps_digit = _MPU9250_GYRO_DPS_DIGIT_245DPS
@@ -436,8 +448,34 @@ class MPU9250:
         """The gyroscope X, Y, Z axis values as a 3-tuple of
         degrees/second values.
         """
+        so = self._gyro_so
+        sf = self._gyro_sf
+        ox, oy, oz = self._gyro_offset
+
         raw = self.read_gyro_raw()
-        return map(lambda x: x * self._gyro_dps_digit, raw)
+        raw = [value / so * sf for value in raw]
+
+        raw[0] -= ox
+        raw[1] -= oy
+        raw[2] -= oz
+
+        return raw
+
+    def calibrate_gyro(self, count=256, delay=0):
+        ox, oy, oz = (0.0, 0.0, 0.0)
+        self._gyro_offset = (0.0, 0.0, 0.0)
+        n = float(count)
+
+        while count:
+            time.sleep(delay/1000)
+            gx, gy, gz = self.read_gyro()
+            ox += gx
+            oy += gy
+            oz += gz
+            count -= 1
+
+        self._gyro_offset = (ox / n, oy / n, oz / n)
+        return self._gyro_offset
 
     def read_temp_raw(self):
         """Read the raw temperature sensor value and return it as a 12-bit
