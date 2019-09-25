@@ -178,7 +178,7 @@ class MPU9250:
         # wake up device - clear sleep mode bit (6), enable all sensors
         self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x00)
         sleep(0.1)
-        
+
         self._write_u8(_XGTYPE, _MPU9250_PWR_MGMT_1, 0x01) # get stable time source
         sleep(0.2)
 
@@ -210,7 +210,7 @@ class MPU9250:
         asax = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAX)
         asay = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAY)
         asaz = self._read_u8(_MAGTYPE, _MPU9250_REGISTER_MAG_ASAZ)
-        
+
         self._write_u8(_MAGTYPE, _MPU9250_REGISTER_CNTL_M, 0x00)
 
         # Should wait at least 100us before next mode
