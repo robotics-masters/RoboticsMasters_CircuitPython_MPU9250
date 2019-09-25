@@ -5,6 +5,8 @@ from time import sleep
 
 i2c = busio.I2C(board.SCL, board.SDA)
 
+print(adafruit_mpu9250.__file__)
+
 sensor = adafruit_mpu9250.MPU9250_I2C(i2c, 0x69)
 
 while True:
