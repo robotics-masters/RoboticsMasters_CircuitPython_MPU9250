@@ -328,7 +328,7 @@ class MPU9250:
         magnetometer property!
         """
         # Read the magnetometer
-        self._read_bytes(_MAGTYPE, 0x80 | _MPU9250_REGISTER_MAG_XOUT_H, 6,
+        self._read_bytes(_MAGTYPE, _MPU9250_REGISTER_MAG_XOUT_H, 6,
                          self._BUFFER)
         sleep(0.02)
 
@@ -348,16 +348,21 @@ class MPU9250:
         raw[1] *= self._adjustment_mag[1]
         raw[2] *= self._adjustment_mag[2]
 
-        if self._mag_calibrated:
-            # Apply hard iron ie. offset bias from calibration
-            raw[0] -= self._offset_mag[0]
-            raw[1] -= self._offset_mag[1]
-            raw[2] -= self._offset_mag[2]
+	# Apply output scale determined in constructor
+        so = self._so
+        raw[0] *= so
+        raw[1] *= so
+        raw[2] *= so
 
-            # Apply soft iron ie. scale bias from calibration
-            raw[0] *= self._scale_mag[0]
-            raw[1] *= self._scale_mag[1]
-            raw[2] *= self._scale_mag[2]
+        # Apply hard iron ie. offset bias from calibration
+        raw[0] -= self._offset_mag[0]
+        raw[1] -= self._offset_mag[1]
+        raw[2] -= self._offset_mag[2]
+
+        # Apply soft iron ie. scale bias from calibration
+        raw[0] *= self._scale_mag[0]
+        raw[1] *= self._scale_mag[1]
+        raw[2] *= self._scale_mag[2]
 
         return (raw[0], raw[1], raw[2])
 
