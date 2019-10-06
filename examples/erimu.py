@@ -15,6 +15,6 @@ while True:
     print("")
     print("Acceleration (m/s^2): ({0:0.3f}, {1:0.3f}, {2:0.3f})".format(*sensor.read_acceleration()))
     print("Magnetometer (gauss): ({0:0.3f}, {1:0.3f}, {2:0.3f})".format(*sensor.read_magnetic()))
-    print("Gyroscope (degrees/sec): ({0:0.3f}, {1:0.3f}, {2:0.3f})".format(*sensor.read_acceleration()))
+    print("Gyroscope (degrees/sec): ({0:0.3f}, {1:0.3f}, {2:0.3f})".format(*sensor.read_gyro()))
     print("Temperature: {0:0.3f}C".format(sensor.mpu6500.read_temperature()))
     sleep(2)
