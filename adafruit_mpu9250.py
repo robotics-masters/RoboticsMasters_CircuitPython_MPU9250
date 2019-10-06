@@ -165,7 +165,7 @@ class MPU9250:
     # thread safe!
     _BUFFER = bytearray(6)
 
-    def __init__(self, address=_MPU9250_ADDRESS_ACCELGYRO):
+    def __init__(self, address=_MPU9250_ADDRESS_ACCELGYRO, gyro_fs=SF_DEG_S):
         self.address = address
         ### ACCEL and GYRO SETUP
         # Check ID register for accel/gyro.
@@ -231,7 +231,7 @@ class MPU9250:
         self.accel_range = ACCELRANGE_2G
         self.gyro_scale = GYROSCALE_245DPS
         self._gyro_so = _GYRO_SO_250DPS
-        self._gyro_sf = SF_RAD_S
+        self._gyro_sf = SF_DEG_S
         self._gyro_offset = (0, 0, 0)
         # magnetometer variables
         self._scale_mag = (1,1,1)
